@@ -1,0 +1,178 @@
+=== Objective 2 / Section 3.2 reanalysis ===
+Input: Matriz_Brocoli_SUM_1nm_ASCII.xlsx
+Output root: J:\Brócoli\20260202_ Brocoli\Objetivo_2
+Seed: 123 | nPerm: 4999
+SG poly: 2 | SG window: 11
+
+Detected columns:
+  Part     : Parte
+  Maturity : Maduracion
+  N2/WReg  : Aplicacion_N2
+  SampleID : L_Histidine
+
+NOTE: Manifest not used (missing or disabled): analysis_set_retained.csv
+
+n = 53 | p = 1551 | dx = 1 nm
+
+[Warning: Columns of X are linearly dependent to within machine precision.
+Using only the first 52 components to compute TSQUARED.] 
+[> In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('pca>localTSquared', 'C:\Program Files\MATLAB\R2025a\toolbox\stats\stats\pca.m', 515)" style="font-weight:bold">pca>localTSquared</a> (<a href="matlab: opentoline('C:\Program Files\MATLAB\R2025a\toolbox\stats\stats\pca.m',515,0)">line 515</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('pca', 'C:\Program Files\MATLAB\R2025a\toolbox\stats\stats\pca.m', 361)" style="font-weight:bold">pca</a> (<a href="matlab: opentoline('C:\Program Files\MATLAB\R2025a\toolbox\stats\stats\pca.m',361,0)">line 361</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 210)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',210,0)">line 210</a>)] 
+[Warning: Columns of X are linearly dependent to within machine precision.
+Using only the first 52 components to compute TSQUARED.] 
+[> In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('pca>localTSquared', 'C:\Program Files\MATLAB\R2025a\toolbox\stats\stats\pca.m', 515)" style="font-weight:bold">pca>localTSquared</a> (<a href="matlab: opentoline('C:\Program Files\MATLAB\R2025a\toolbox\stats\stats\pca.m',515,0)">line 515</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('pca', 'C:\Program Files\MATLAB\R2025a\toolbox\stats\stats\pca.m', 361)" style="font-weight:bold">pca</a> (<a href="matlab: opentoline('C:\Program Files\MATLAB\R2025a\toolbox\stats\stats\pca.m',361,0)">line 361</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 211)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',211,0)">line 211</a>)] 
+[Warning: Exported image displays axes toolbar. To remove axes toolbar from image, export
+again.] 
+Term Part           | F=9.148 | p_perm=0.0002 | R2=0.112 | eta2p=0.319
+[Warning: The assignment added rows to the table, but did not assign values to all of the
+table's existing variables. Those variables are extended with rows containing default
+values.] 
+[> In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('tabular/dotAssign', 'C:\Program Files\MATLAB\R2025a\toolbox\matlab\datatypes\tabular\@tabular\dotAssign.m', 486)" style="font-weight:bold"> . </a> (<a href="matlab: opentoline('C:\Program Files\MATLAB\R2025a\toolbox\matlab\datatypes\tabular\@tabular\dotAssign.m',486,0)">line 486</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1>runFreedmanLaneMANOVA_fast', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 651)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1>runFreedmanLaneMANOVA_fast</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',651,0)">line 651</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 313)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',313,0)">line 313</a>)] 
+Term Maturity       | F=3.787 | p_perm=0.0036 | R2=0.046 | eta2p=0.163
+[Warning: The assignment added rows to the table, but did not assign values to all of the
+table's existing variables. Those variables are extended with rows containing default
+values.] 
+[> In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('tabular/dotAssign', 'C:\Program Files\MATLAB\R2025a\toolbox\matlab\datatypes\tabular\@tabular\dotAssign.m', 486)" style="font-weight:bold"> . </a> (<a href="matlab: opentoline('C:\Program Files\MATLAB\R2025a\toolbox\matlab\datatypes\tabular\@tabular\dotAssign.m',486,0)">line 486</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1>runFreedmanLaneMANOVA_fast', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 651)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1>runFreedmanLaneMANOVA_fast</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',651,0)">line 651</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 313)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',313,0)">line 313</a>)] 
+Term N2             | F=1.273 | p_perm=0.2572 | R2=0.008 | eta2p=0.032
+[Warning: The assignment added rows to the table, but did not assign values to all of the
+table's existing variables. Those variables are extended with rows containing default
+values.] 
+[> In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('tabular/dotAssign', 'C:\Program Files\MATLAB\R2025a\toolbox\matlab\datatypes\tabular\@tabular\dotAssign.m', 486)" style="font-weight:bold"> . </a> (<a href="matlab: opentoline('C:\Program Files\MATLAB\R2025a\toolbox\matlab\datatypes\tabular\@tabular\dotAssign.m',486,0)">line 486</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1>runFreedmanLaneMANOVA_fast', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 651)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1>runFreedmanLaneMANOVA_fast</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',651,0)">line 651</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 313)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',313,0)">line 313</a>)] 
+Term Part×Maturity  | F=4.180 | p_perm=0.0004 | R2=0.102 | eta2p=0.300
+[Warning: The assignment added rows to the table, but did not assign values to all of the
+table's existing variables. Those variables are extended with rows containing default
+values.] 
+[> In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('tabular/dotAssign', 'C:\Program Files\MATLAB\R2025a\toolbox\matlab\datatypes\tabular\@tabular\dotAssign.m', 486)" style="font-weight:bold"> . </a> (<a href="matlab: opentoline('C:\Program Files\MATLAB\R2025a\toolbox\matlab\datatypes\tabular\@tabular\dotAssign.m',486,0)">line 486</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1>runFreedmanLaneMANOVA_fast', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 651)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1>runFreedmanLaneMANOVA_fast</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',651,0)">line 651</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 313)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',313,0)">line 313</a>)] 
+Term Part×N2        | F=2.799 | p_perm=0.0208 | R2=0.034 | eta2p=0.126
+[Warning: The assignment added rows to the table, but did not assign values to all of the
+table's existing variables. Those variables are extended with rows containing default
+values.] 
+[> In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('tabular/dotAssign', 'C:\Program Files\MATLAB\R2025a\toolbox\matlab\datatypes\tabular\@tabular\dotAssign.m', 486)" style="font-weight:bold"> . </a> (<a href="matlab: opentoline('C:\Program Files\MATLAB\R2025a\toolbox\matlab\datatypes\tabular\@tabular\dotAssign.m',486,0)">line 486</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1>runFreedmanLaneMANOVA_fast', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 651)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1>runFreedmanLaneMANOVA_fast</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',651,0)">line 651</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 313)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',313,0)">line 313</a>)] 
+Term Maturity×N2    | F=1.192 | p_perm=0.2928 | R2=0.015 | eta2p=0.058
+Term Part           | F=5.405 | p_perm=0.0002 | R2=0.111 | eta2p=0.217
+[Warning: The assignment added rows to the table, but did not assign values to all of the
+table's existing variables. Those variables are extended with rows containing default
+values.] 
+[> In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('tabular/dotAssign', 'C:\Program Files\MATLAB\R2025a\toolbox\matlab\datatypes\tabular\@tabular\dotAssign.m', 486)" style="font-weight:bold"> . </a> (<a href="matlab: opentoline('C:\Program Files\MATLAB\R2025a\toolbox\matlab\datatypes\tabular\@tabular\dotAssign.m',486,0)">line 486</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1>runFreedmanLaneMANOVA_fast', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 651)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1>runFreedmanLaneMANOVA_fast</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',651,0)">line 651</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 317)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',317,0)">line 317</a>)] 
+Term Maturity       | F=2.758 | p_perm=0.0004 | R2=0.057 | eta2p=0.124
+[Warning: The assignment added rows to the table, but did not assign values to all of the
+table's existing variables. Those variables are extended with rows containing default
+values.] 
+[> In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('tabular/dotAssign', 'C:\Program Files\MATLAB\R2025a\toolbox\matlab\datatypes\tabular\@tabular\dotAssign.m', 486)" style="font-weight:bold"> . </a> (<a href="matlab: opentoline('C:\Program Files\MATLAB\R2025a\toolbox\matlab\datatypes\tabular\@tabular\dotAssign.m',486,0)">line 486</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1>runFreedmanLaneMANOVA_fast', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 651)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1>runFreedmanLaneMANOVA_fast</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',651,0)">line 651</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 317)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',317,0)">line 317</a>)] 
+Term N2             | F=1.549 | p_perm=0.0726 | R2=0.016 | eta2p=0.038
+[Warning: The assignment added rows to the table, but did not assign values to all of the
+table's existing variables. Those variables are extended with rows containing default
+values.] 
+[> In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('tabular/dotAssign', 'C:\Program Files\MATLAB\R2025a\toolbox\matlab\datatypes\tabular\@tabular\dotAssign.m', 486)" style="font-weight:bold"> . </a> (<a href="matlab: opentoline('C:\Program Files\MATLAB\R2025a\toolbox\matlab\datatypes\tabular\@tabular\dotAssign.m',486,0)">line 486</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1>runFreedmanLaneMANOVA_fast', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 651)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1>runFreedmanLaneMANOVA_fast</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',651,0)">line 651</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 317)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',317,0)">line 317</a>)] 
+Term Part×Maturity  | F=2.918 | p_perm=0.0002 | R2=0.120 | eta2p=0.230
+[Warning: The assignment added rows to the table, but did not assign values to all of the
+table's existing variables. Those variables are extended with rows containing default
+values.] 
+[> In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('tabular/dotAssign', 'C:\Program Files\MATLAB\R2025a\toolbox\matlab\datatypes\tabular\@tabular\dotAssign.m', 486)" style="font-weight:bold"> . </a> (<a href="matlab: opentoline('C:\Program Files\MATLAB\R2025a\toolbox\matlab\datatypes\tabular\@tabular\dotAssign.m',486,0)">line 486</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1>runFreedmanLaneMANOVA_fast', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 651)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1>runFreedmanLaneMANOVA_fast</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',651,0)">line 651</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 317)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',317,0)">line 317</a>)] 
+Term Part×N2        | F=1.655 | p_perm=0.0126 | R2=0.034 | eta2p=0.078
+[Warning: The assignment added rows to the table, but did not assign values to all of the
+table's existing variables. Those variables are extended with rows containing default
+values.] 
+[> In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('tabular/dotAssign', 'C:\Program Files\MATLAB\R2025a\toolbox\matlab\datatypes\tabular\@tabular\dotAssign.m', 486)" style="font-weight:bold"> . </a> (<a href="matlab: opentoline('C:\Program Files\MATLAB\R2025a\toolbox\matlab\datatypes\tabular\@tabular\dotAssign.m',486,0)">line 486</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1>runFreedmanLaneMANOVA_fast', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 651)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1>runFreedmanLaneMANOVA_fast</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',651,0)">line 651</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 317)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',317,0)">line 317</a>)] 
+Term Maturity×N2    | F=1.421 | p_perm=0.0546 | R2=0.029 | eta2p=0.068
+{Error using <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('table', 'C:\Program Files\MATLAB\R2025a\toolbox\matlab\datatypes\tabular\@table\table.m', 57)" style="font-weight:bold">table</a> (<a href="matlab: opentoline('C:\Program Files\MATLAB\R2025a\toolbox\matlab\datatypes\tabular\@table\table.m',57,0)">line 57</a>)
+All table variables must have the same number of rows.
+
+Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1>makeMeanSDtable', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 700)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1>makeMeanSDtable</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',700,0)">line 700</a>)
+    tbl = table(wl(:), mu(:), sd(:), "VariableNames", ["Wavelength_nm","Mean","SD"]);
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 340)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',340,0)">line 340</a>)
+writetable(makeMeanSDtable(wl, X_snv), OUTXLSX, "Sheet","MeanSD_SNV");
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+Caused by:
+    If you intended "VariableNames" to specify a parameter name, the recommended syntax is
+    table(..., VariableNames=value).
+
+    Alternatively, for backwards compatibility use the syntax table(..., 'VariableNames',
+    value) with the parameter name specified as a character vector.
+} 
+BRC_obj2_Section32_SpectralStructure_run_v1
+Script archived (copy): J:\Brócoli\20260202_ Brocoli\Objetivo_2\Code\BRC_obj2_Section32_SpectralStructure_run_v1.m
+[Warning: File not found or permission denied] 
+[> In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 63)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',63,0)">line 63</a>)] 
+=== Objective 2 / Section 3.2 reanalysis ===
+Input: Matriz_Brocoli_SUM_1nm_ASCII.xlsx
+Output root: J:\Brócoli\20260202_ Brocoli\Objetivo_2
+Seed: 123 | nPerm: 4999
+SG poly: 2 | SG window: 11
+
+Detected columns:
+  Part     : Parte
+  Maturity : Maduracion
+  N2       : Aplicacion_N2
+  SampleID : (not found)
+
+NOTE: Manifest not used (missing or disabled): analysis_set_retained.csv
+
+n = 53 | p = 1551 | dx = 1 nm
+
+[Warning: Ignoring 'InvertHardCopy' property. Output will use the current figure's color
+because it was explicitly set. To control the background when exporting a figure, use the
+exportgraphics function.] 
+[> In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('print', 'C:\Program Files\MATLAB\R2025a\toolbox\matlab\graphics\graphics\printing\print.m', 82)" style="font-weight:bold">print</a> (<a href="matlab: opentoline('C:\Program Files\MATLAB\R2025a\toolbox\matlab\graphics\graphics\printing\print.m',82,0)">line 82</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1>robustSaveFig', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 546)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1>robustSaveFig</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',546,0)">line 546</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 169)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',169,0)">line 169</a>)] 
+[Warning: Ignoring 'InvertHardCopy' property. Output will use the current figure's color
+because it was explicitly set. To control the background when exporting a figure, use the
+exportgraphics function.] 
+[> In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('print', 'C:\Program Files\MATLAB\R2025a\toolbox\matlab\graphics\graphics\printing\print.m', 82)" style="font-weight:bold">print</a> (<a href="matlab: opentoline('C:\Program Files\MATLAB\R2025a\toolbox\matlab\graphics\graphics\printing\print.m',82,0)">line 82</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1>robustSaveFig', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 546)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1>robustSaveFig</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',546,0)">line 546</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 205)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',205,0)">line 205</a>)] 
+[Warning: Ignoring 'InvertHardCopy' property. Output will use the current figure's color
+because it was explicitly set. To control the background when exporting a figure, use the
+exportgraphics function.] 
+[> In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('print', 'C:\Program Files\MATLAB\R2025a\toolbox\matlab\graphics\graphics\printing\print.m', 82)" style="font-weight:bold">print</a> (<a href="matlab: opentoline('C:\Program Files\MATLAB\R2025a\toolbox\matlab\graphics\graphics\printing\print.m',82,0)">line 82</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1>robustSaveFig', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 546)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1>robustSaveFig</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',546,0)">line 546</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 230)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',230,0)">line 230</a>)] 
+[Warning: Ignoring 'InvertHardCopy' property. Output will use the current figure's color
+because it was explicitly set. To control the background when exporting a figure, use the
+exportgraphics function.] 
+[> In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('print', 'C:\Program Files\MATLAB\R2025a\toolbox\matlab\graphics\graphics\printing\print.m', 82)" style="font-weight:bold">print</a> (<a href="matlab: opentoline('C:\Program Files\MATLAB\R2025a\toolbox\matlab\graphics\graphics\printing\print.m',82,0)">line 82</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1>robustSaveFig', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 546)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1>robustSaveFig</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',546,0)">line 546</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('BRC_obj2_Section32_SpectralStructure_run_v1', 'J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m', 271)" style="font-weight:bold">BRC_obj2_Section32_SpectralStructure_run_v1</a> (<a href="matlab: opentoline('J:\Brócoli\20260202_ Brocoli\BRC_obj2_Section32_SpectralStructure_run_v1.m',271,0)">line 271</a>)] 
+Term Part           | F=9.148 | p_perm=0.0002 | R2=0.112 | eta2p=0.319
+Term Maturity       | F=3.787 | p_perm=0.0036 | R2=0.046 | eta2p=0.163
+Term N2             | F=1.273 | p_perm=0.2572 | R2=0.008 | eta2p=0.032
+Term Part×Maturity  | F=4.180 | p_perm=0.0004 | R2=0.102 | eta2p=0.300
+Term Part×N2        | F=2.799 | p_perm=0.0208 | R2=0.034 | eta2p=0.126
+Term Maturity×N2    | F=1.192 | p_perm=0.2928 | R2=0.015 | eta2p=0.058
+Term Part           | F=5.405 | p_perm=0.0002 | R2=0.111 | eta2p=0.217
+Term Maturity       | F=2.758 | p_perm=0.0004 | R2=0.057 | eta2p=0.124
+Term N2             | F=1.549 | p_perm=0.0726 | R2=0.016 | eta2p=0.038
+Term Part×Maturity  | F=2.918 | p_perm=0.0002 | R2=0.120 | eta2p=0.230
+Term Part×N2        | F=1.655 | p_perm=0.0126 | R2=0.034 | eta2p=0.078
+Term Maturity×N2    | F=1.421 | p_perm=0.0546 | R2=0.029 | eta2p=0.068
+
+DONE.
+Excel: J:\Brócoli\20260202_ Brocoli\Objetivo_2\Tables\obj2_section32_outputs.xlsx
+Main figs: J:\Brócoli\20260202_ Brocoli\Objetivo_2\Figures
+Supp figs: J:\Brócoli\20260202_ Brocoli\Objetivo_2\Supplementary
+Log: J:\Brócoli\20260202_ Brocoli\Objetivo_2\obj2_section32_log.txt
