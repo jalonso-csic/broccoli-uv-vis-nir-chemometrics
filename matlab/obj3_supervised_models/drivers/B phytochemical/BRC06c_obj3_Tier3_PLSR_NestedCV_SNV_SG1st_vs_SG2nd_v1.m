@@ -1,47 +1,16 @@
-% BRC06c_OBJ3_TIER3S_PLSR_NestedCV_SNV_SG1st_vs_SG2nd_v1.m
-% -------------------------------------------------------------------------
-% Objective 3 — Tier3S screening (public, audit-oriented)
+% BRC06c_obj3_Tier3_PLSR_NestedCV_SNV_SG1st_vs_SG2nd_v1.m
+% ------------------------------------------------------------
+% Objective 3 — Tier 3 screening (audit-ready)
+% Same nested-CV PLS-R pipeline as Obj3, but applied to Tier 3 endpoints
+% (numeric, non-spectral, non-factor; excluding Tier 1 and Tier 2), within
+% the Pathernon × Ultrasonido (UAE) core.
 %
-% Purpose
-%   Screen all Tier 3 endpoints (i.e., all numeric, non-spectral, non-factor
-%   variables EXCLUDING Tier 1 and Tier 2) using the same repeated nested-CV
-%   PLSR framework used in Objective 3, within the defined experimental core.
+% Preprocessing comparison:
+%   (A) SNV + Savitzky–Golay 1st derivative (poly=2, window=11, Δ=1 nm)
+%   (B) SNV + Savitzky–Golay 2nd derivative (poly=2, window=11, Δ=1 nm)
 %
-% Preprocessing comparison (two configurations)
-%   A) SNV + Savitzky–Golay 1st derivative (poly=2, window=11)
-%   B) SNV + Savitzky–Golay 2nd derivative (poly=2, window=11)
-%
-% Validation (reproducible)
-%   - Outer CV: K=5 folds, repeated R=50 times
-%   - Outer stratification: Maturity × N2
-%   - Optional guardrail: each outer TRAIN split must contain all Part levels
-%   - Inner CV: Kinner=4, latent variables selected by minimum RMSE
-%   - LVmax = min(LV_MAX_CAP, nTrain-2, p)
-%
-% Inputs (Excel)
-%   - One worksheet containing:
-%       * Factor columns (e.g., Cultivar/Variety, Part, Maturity, N2, Extraction)
-%       * Spectral columns named nm_<integer> (e.g., nm_250, nm_251, ...)
-%       * Numeric response columns (Tier 1, Tier 2, Tier 3 candidates)
-%
-% Outputs (per preprocessing configuration)
-%   - OBJ3S_Tier3S_Included.xlsx      : Tier3S endpoints kept after QC
-%   - OBJ3S_Tier3S_Skipped.xlsx       : skipped endpoints + reason
-%   - OBJ3S_Summary_Tier3S_<CFG>.xlsx : pooled and repeat-level metrics summary
-%   - OBJ3S_RepeatMetrics_Tier3S_<CFG>.xlsx : per-repeat metrics
-%   - (optional) OBJ3S_Predictions_Tier3S_<CFG>.xlsx : per-endpoint predictions
-%   - (optional) OBJ3S_VIPraw_Tier3S_<CFG>.mat       : VIP per outer fit
-%
-% Dependencies
-%   - Statistics and Machine Learning Toolbox (plsregress, cvpartition)
-%   - Signal Processing Toolbox (sgolay)
-%
-% Notes
-%   - Tier3S is defined automatically from the table headers:
-%       all numeric columns that are NOT nm_* and NOT factor columns,
-%       excluding the user-specified Tier 1 and Tier 2 lists.
-%   - Use EXCLUDE_REGEX to omit systematic blocks (e.g., microbiology panels).
-% -------------------------------------------------------------------------
+% Outputs are written to: ./Objetivo_3b
+% ------------------------------------------------------------
 
 clear; clc;
 
@@ -50,18 +19,17 @@ clear; clc;
 % =========================
 INPUT_XLSX  = 'Matriz_Brocoli_SUM_1nm_ASCII.xlsx';
 SHEET_NAME  = 'Matriz';
-
-OUTDIR      = fullfile(pwd, 'OBJ3_TIER3S_OUT');
+OUTDIR      = fullfile(pwd, 'Objetivo_3b');
 if ~exist(OUTDIR,'dir'); mkdir(OUTDIR); end
 
-% Core definition (filters applied to factor columns)
+% Core definition
 CULTIVAR_CORE   = "Pathernon";
 EXTRACTION_CORE = "Ultrasonido";
 
-% Tier 1 (primary endpoints) — EXACT headers as in the matrix
+% Tier 1 (primary endpoints) — EXACT matrix headers
 TIER1_LIST = string(["Extraction_yield","Total_phenolics","DPPH","ABTS","Antihypertensive_act."]);
 
-% Tier 2 (class aggregates) — EXACT headers as in the matrix
+% Tier 2 (class aggregates) — EXACT matrix headers
 TIER2_LIST = string([
     "SUM_Amino_acids"
     "SUM_N_related"
@@ -82,12 +50,12 @@ TIER2_LIST = string([
     "SUM_Phenolics_MS"
 ]);
 
-% Optional: exclude Tier3 patterns by regex (leave empty to include all)
-% Example:
+% Optional: exclude some Tier3 patterns (leave empty to include all)
+% Examples:
 %   EXCLUDE_REGEX = ["^B_cereus_","^S_aureus_","^L_innocua_"];
 EXCLUDE_REGEX = string.empty(1,0);
 
-% Endpoint QC (same philosophy as Objective 3)
+% Y quality control (same as Obj.3)
 MIN_N_NONNAN = 20;
 MAX_NAN_FRAC = 0.30;
 
@@ -96,111 +64,102 @@ K_OUTER   = 5;
 R_REPEATS = 50;
 BASE_SEED = 12345;
 
-% Inner CV (LV selection)
+% Inner CV for LV selection
 K_INNER    = 4;
 LV_MAX_CAP = 15;
-LV_POLICY  = "minRMSE"; %#ok<NASGU> documented policy; minRMSE implemented
+LV_POLICY  = "minRMSE";
 
-% Guardrail for fold plans
+% Guardrail (recommended)
 ENFORCE_PART_COVERAGE = true;
 MAX_TRIES_FOLDS = 300;
 
-% SG derivative parameters
+% SG derivative parameters (SNV + SG 1st/2nd derivative)
 SG_POLY_ORDER  = 2;
-SG_FRAME_LEN   = 11; % must be odd
-DELTA_NM       = 1;  % wavelength step (nm), used for derivative scaling
+SG_FRAME_LEN   = 11; % odd
+DELTA_NM       = 1;
 
-% Standardise X after preprocessing (using TRAIN-set statistics)
+% Standardise X after preprocessing (TRAIN stats)
 SCALE_X = true;
 
-% Practical switches (Tier3 can be large)
-WRITE_PREDICTIONS = false; % true => one Excel workbook with one sheet per Y
-SAVE_VIPRAW       = true;  % true => store VIP per outer fit (can be large)
+% Practical switches (Tier3 can be heavy)
+WRITE_PREDICTIONS = false; % set true if you want full audit trail per Y
+SAVE_VIPRAW        = true;  % set false if you only want metrics now
 
 %% =========================
-% LOAD DATA (PRESERVE HEADERS)
+% LOAD DATA (PRESERVE NAMES)
 % =========================
-fprintf('Loading Excel file: %s (sheet: %s)\n', INPUT_XLSX, SHEET_NAME);
-
+fprintf('Loading: %s\n', INPUT_XLSX);
 opts = detectImportOptions(INPUT_XLSX, 'Sheet', SHEET_NAME);
 opts.VariableNamingRule = 'preserve';
 T = readtable(INPUT_XLSX, opts);
 
-fprintf('Loaded table: %d rows × %d columns\n', height(T), width(T));
+fprintf('Rows: %d | Cols: %d\n', height(T), width(T));
 
 %% =========================
-% IDENTIFY FACTOR COLUMNS (ROBUST)
+% IDENTIFY FACTORS (ROBUST)
 % =========================
-% Add/remove candidate names here if your matrix uses different headers
-colCode    = pickVarName(T, ["Codigo","Código","CODIGO","Code","Sample_ID","SampleID"]);
-colCult    = pickVarName(T, ["Variedad","Variety","Cultivar"]);
-colPart    = pickVarName(T, ["Parte","Part"]);
-colMat     = pickVarName(T, ["Maduracion","Maduración","Maturity"]);
-colN2      = pickVarName(T, ["Aplicacion_N2","Aplicación_N2","Aplicación N2","Aplicacion N2","N2","Nitrogen"]);
-colExtract = pickVarName(T, ["Extraccion","Extracción","Extraction"]);
+colCodigo   = pickVarName(T, ["Codigo","Código","CODIGO","Code"]);
+colVariedad = pickVarName(T, ["Variedad","Variety","Cultivar"]);
+colParte    = pickVarName(T, ["Parte","Part"]);
+colMad      = pickVarName(T, ["Maduracion","Maduración","Maturity"]);
+colN2       = pickVarName(T, ["Aplicacion_N2","Aplicación_N2","Aplicación N2","Aplicacion N2","N2","Nitrogen"]);
+colExt      = pickVarName(T, ["Extraccion","Extracción","Extraction"]);
 
-assert(colCult~="" && colExtract~="" && colPart~="" && colMat~="" && colN2~="", ...
+assert(colVariedad~="" && colExt~="" && colParte~="" && colMad~="" && colN2~="", ...
     'Missing required factor columns. Check matrix headers.');
 
-factorCols = unique([colCode,colCult,colPart,colMat,colN2,colExtract]);
+factorCols = unique([colCodigo,colVariedad,colParte,colMad,colN2,colExt]);
 factorCols = factorCols(factorCols ~= "");
 
 %% =========================
-% FILTER CORE SUBSET
+% FILTER CORE
 % =========================
-cultStr = string(T.(colCult));
-extrStr = string(T.(colExtract));
-
-isCore = strcmpi(strtrim(cultStr), CULTIVAR_CORE) & strcmpi(strtrim(extrStr), EXTRACTION_CORE);
+varietyStr = string(T.(colVariedad));
+extrStr    = string(T.(colExt));
+isCore = strcmpi(strtrim(varietyStr), CULTIVAR_CORE) & strcmpi(strtrim(extrStr), EXTRACTION_CORE);
 Tcore  = T(isCore, :);
 
-fprintf('Core subset (Cultivar=%s, Extraction=%s): n = %d\n', CULTIVAR_CORE, EXTRACTION_CORE, height(Tcore));
+fprintf('Core subset (Variedad=%s, Extraccion=%s): n = %d\n', CULTIVAR_CORE, EXTRACTION_CORE, height(Tcore));
 assert(height(Tcore) >= MIN_N_NONNAN, 'Core subset too small for MIN_N_NONNAN.');
 
 %% =========================
 % EXTRACT X (SPECTRA) + WAVELENGTH VECTOR
 % =========================
-allNames  = string(Tcore.Properties.VariableNames);
-isSpec    = startsWith(allNames, "nm_");
+allNames = string(Tcore.Properties.VariableNames);
+isSpec   = startsWith(allNames, "nm_");
 specNames = allNames(isSpec);
-assert(~isempty(specNames), 'No spectral columns found (expected headers "nm_*").');
+assert(~isempty(specNames), 'No spectral columns found (expected "nm_*").');
 
 Xraw = double(table2array(Tcore(:, specNames)));
 
 wl = nan(numel(specNames),1);
-for j = 1:numel(specNames)
-    tok = regexp(specNames(j), '^nm_(\d+)$', 'tokens', 'once');
-    if ~isempty(tok)
-        wl(j) = str2double(tok{1});
-    else
-        % allow looser match if needed
-        tok = regexp(specNames(j), 'nm_(\d+)', 'tokens', 'once');
-        if ~isempty(tok); wl(j) = str2double(tok{1}); end
-    end
+for j=1:numel(specNames)
+    tok = regexp(specNames(j), 'nm_(\d+)', 'tokens', 'once');
+    if ~isempty(tok); wl(j) = str2double(tok{1}); end
 end
 
 %% =========================
-% FACTORS & STRATA FOR STRATIFIED CV
+% FACTORS & STRATA
 % =========================
-Part   = categorical(string(Tcore.(colPart)));
-Mat    = categorical(string(Tcore.(colMat)));
-N2     = categorical(string(Tcore.(colN2)));
+Part = categorical(string(Tcore.(colParte)));
+Mat  = categorical(string(Tcore.(colMad)));
+N2   = categorical(string(Tcore.(colN2)));
 strata = categorical(strcat(string(Mat), "×", string(N2)));
 
 %% =========================
 % DEFINE TIER3S AUTOMATICALLY (QC + exclusions)
 % =========================
-[yTier3S, skipY] = buildTier3SList( ...
-    Tcore, factorCols, TIER1_LIST, TIER2_LIST, ...
-    MIN_N_NONNAN, MAX_NAN_FRAC, EXCLUDE_REGEX);
+[yTier3S, skipY] = buildTier3SList(Tcore, factorCols, TIER1_LIST, TIER2_LIST, ...
+                                  MIN_N_NONNAN, MAX_NAN_FRAC, EXCLUDE_REGEX);
 
-fprintf('Tier3S endpoints retained after QC: %d\n', numel(yTier3S));
+fprintf('Tier3S endpoints to model (after QC): %d\n', numel(yTier3S));
 
-writetable(table(yTier3S(:), 'VariableNames', {'Tier3S_Endpoint'}), fullfile(OUTDIR,'OBJ3S_Tier3S_Included.xlsx'));
+% Export list + skipped
+writetable(table(yTier3S(:), 'VariableNames',{'Tier3S_Endpoint'}), fullfile(OUTDIR,'OBJ3S_Tier3S_Included.xlsx'));
 writetable(skipY, fullfile(OUTDIR,'OBJ3S_Tier3S_Skipped.xlsx'));
 
 %% =========================
-% PREPROCESSING CONFIGURATIONS
+% CONFIGS
 % =========================
 configs = struct([]);
 
@@ -211,44 +170,44 @@ configs(2).name = "SNV_SG2nd";
 configs(2).preprocessFcn = @(X) preprocess_snv_sg(X, SG_POLY_ORDER, SG_FRAME_LEN, 2, DELTA_NM);
 
 %% =========================
-% RUN TIER3S SCREENING
+% RUN TIER3S
 % =========================
 runTier3S("Tier3S", yTier3S);
 
-fprintf('\nOBJ3 Tier3S screening completed.\nOutputs written to: %s\n', OUTDIR);
+fprintf('\nOBJ3_TIER3S finished. Outputs in: %s\n', OUTDIR);
 
-%% ========================================================================
+%% ============================================================
 % LOCAL DRIVER
-% ========================================================================
+% ============================================================
 function runTier3S(tierName, yList)
-    OUTDIR  = evalin('base','OUTDIR');
-    Tcore   = evalin('base','Tcore');
-    Xraw    = evalin('base','Xraw');
-    wl      = evalin('base','wl');
-    Part    = evalin('base','Part');
-    strata  = evalin('base','strata');
-    configs = evalin('base','configs');
+    OUTDIR      = evalin('base','OUTDIR');
+    Tcore       = evalin('base','Tcore');
+    Xraw        = evalin('base','Xraw');
+    wl          = evalin('base','wl');
+    Part        = evalin('base','Part');
+    strata      = evalin('base','strata');
+    configs     = evalin('base','configs');
 
     MIN_N_NONNAN = evalin('base','MIN_N_NONNAN');
     MAX_NAN_FRAC = evalin('base','MAX_NAN_FRAC');
 
-    K_OUTER    = evalin('base','K_OUTER');
-    R_REPEATS  = evalin('base','R_REPEATS');
-    BASE_SEED  = evalin('base','BASE_SEED');
-    K_INNER    = evalin('base','K_INNER');
+    K_OUTER   = evalin('base','K_OUTER');
+    R_REPEATS = evalin('base','R_REPEATS');
+    BASE_SEED = evalin('base','BASE_SEED');
+    K_INNER   = evalin('base','K_INNER');
     LV_MAX_CAP = evalin('base','LV_MAX_CAP');
-    LV_POLICY  = evalin('base','LV_POLICY'); %#ok<NASGU>
+    LV_POLICY  = evalin('base','LV_POLICY');
 
     ENFORCE_PART_COVERAGE = evalin('base','ENFORCE_PART_COVERAGE');
-    MAX_TRIES_FOLDS       = evalin('base','MAX_TRIES_FOLDS');
-    SCALE_X               = evalin('base','SCALE_X');
+    MAX_TRIES_FOLDS = evalin('base','MAX_TRIES_FOLDS');
+    SCALE_X = evalin('base','SCALE_X');
 
     WRITE_PREDICTIONS = evalin('base','WRITE_PREDICTIONS');
     SAVE_VIPRAW       = evalin('base','SAVE_VIPRAW');
 
     for c = 1:numel(configs)
         cfgName = configs(c).name;
-        fprintf('\n=== OBJ3 Tier3S | %s | %s ===\n', tierName, cfgName);
+        fprintf('\n=== OBJ3_TIER3S | %s | %s ===\n', tierName, cfgName);
 
         outSummary = table('Size',[0 16], ...
             'VariableTypes', {'string','double','double','double','double','double','double', ...
@@ -261,14 +220,13 @@ function runTier3S(tierName, yList)
             'VariableNames', {'Y','repeat','R2','RMSE','MAE','Bias','RPD','LV_median'});
 
         VIP_STORE = struct();
+
         predBook = fullfile(OUTDIR, sprintf('OBJ3S_Predictions_%s_%s.xlsx', tierName, cfgName));
-        if WRITE_PREDICTIONS && exist(predBook,'file'); delete(predBook); end
 
         for iY = 1:numel(yList)
             yName = yList(iY);
-
             if ~ismember(yName, string(Tcore.Properties.VariableNames))
-                warning('%s endpoint not found in matrix: %s (skipping)', tierName, yName);
+                warning('%s Y not found in matrix: %s (skipping)', tierName, yName);
                 continue;
             end
 
@@ -276,8 +234,8 @@ function runTier3S(tierName, yList)
             nanFrac = mean(isnan(yv));
             nOK = sum(~isnan(yv));
 
-            if nanFrac > MAX_NAN_FRAC || nOK < MIN_N_NONNAN || std(yv(~isnan(yv))) == 0
-                warning('Skipping Y=%s due to QC (NaN frac=%.2f, nOK=%d)', yName, nanFrac, nOK);
+            if nanFrac > MAX_NAN_FRAC || nOK < MIN_N_NONNAN || std(yv(~isnan(yv)))==0
+                warning('Skipping Y=%s due to QC (nanFrac=%.2f, nOK=%d)', yName, nanFrac, nOK);
                 continue;
             end
 
@@ -288,21 +246,22 @@ function runTier3S(tierName, yList)
             strata_v = strata(valid);
 
             params = struct();
-            params.Kouter     = K_OUTER;
-            params.R          = R_REPEATS;
-            params.baseSeed   = BASE_SEED;
-            params.Kinner     = K_INNER;
-            params.lvMaxCap   = LV_MAX_CAP;
+            params.Kouter = K_OUTER;
+            params.R      = R_REPEATS;
+            params.baseSeed = BASE_SEED;
+            params.Kinner = K_INNER;
+            params.lvMaxCap = LV_MAX_CAP;
+            params.lvPolicy = LV_POLICY;
             params.enforcePartCoverage = ENFORCE_PART_COVERAGE;
-            params.maxTriesFolds       = MAX_TRIES_FOLDS;
-            params.scaleX     = SCALE_X;
+            params.maxTriesFolds = MAX_TRIES_FOLDS;
+            params.scaleX = SCALE_X;
 
             [predLong, repMetrics, pooledMetrics, vipAll, lvAll] = ...
                 runNestedPLSR(X, y, strata_v, part_v, configs(c).preprocessFcn, params);
 
+            % Summary
             outSummary = [outSummary; { ...
-                yName, numel(y), ...
-                pooledMetrics.R2, pooledMetrics.RMSE, pooledMetrics.MAE, pooledMetrics.Bias, pooledMetrics.RPD, ...
+                yName, numel(y), pooledMetrics.R2, pooledMetrics.RMSE, pooledMetrics.MAE, pooledMetrics.Bias, pooledMetrics.RPD, ...
                 mean(repMetrics.R2), std(repMetrics.R2), ...
                 mean(repMetrics.RMSE), std(repMetrics.RMSE), ...
                 mean(repMetrics.MAE), std(repMetrics.MAE), ...
@@ -313,15 +272,16 @@ function runTier3S(tierName, yList)
             repMetrics.Y = repmat(yName, height(repMetrics), 1);
             outRepeatsAll = [outRepeatsAll; repMetrics(:, {'Y','repeat','R2','RMSE','MAE','Bias','RPD','LV_median'})]; %#ok<AGROW>
 
+            % Predictions: optional
             if WRITE_PREDICTIONS
                 writetable(predLong, predBook, 'Sheet', safeSheet(yName));
             end
 
+            % VIP raw: optional
             if SAVE_VIPRAW
-                fn = matlab.lang.makeValidName(yName);
-                VIP_STORE.(fn).vip = vipAll;
-                VIP_STORE.(fn).wl  = wl;
-                VIP_STORE.(fn).lv  = lvAll;
+                VIP_STORE.(matlab.lang.makeValidName(yName)).vip = vipAll;
+                VIP_STORE.(matlab.lang.makeValidName(yName)).wl  = wl;
+                VIP_STORE.(matlab.lang.makeValidName(yName)).lv  = lvAll;
             end
         end
 
@@ -340,9 +300,9 @@ function sh = safeSheet(name)
     if numel(name) > 31; sh = name(1:31); else; sh = name; end
 end
 
-%% ========================================================================
-% TIER3S BUILDER (QC + exclusions)
-% ========================================================================
+%% =========================
+% TIER3S BUILDER (QC + exclusion)
+% =========================
 function [tier3, skipY] = buildTier3SList(Tcore, factorCols, tier1, tier2, minN, maxNanFrac, excludeRegex)
     allNames = string(Tcore.Properties.VariableNames);
     isSpec   = startsWith(allNames, "nm_");
@@ -357,12 +317,12 @@ function [tier3, skipY] = buildTier3SList(Tcore, factorCols, tier1, tier2, minN,
     for i = 1:numel(yNamesAll)
         yn = yNamesAll(i);
 
-        % Exclude Tier 1 and Tier 2
+        % remove Tier1/Tier2
         if any(strcmpi(yn, tier1)) || any(strcmpi(yn, tier2))
             continue;
         end
 
-        % Optional regex exclusions
+        % optional regex exclusions
         if ~isempty(excludeRegex)
             if any(arrayfun(@(rx) ~isempty(regexp(yn, rx, 'once')), excludeRegex))
                 skipY = [skipY; {yn, "Excluded by EXCLUDE_REGEX", NaN}]; %#ok<AGROW>
@@ -379,7 +339,6 @@ function [tier3, skipY] = buildTier3SList(Tcore, factorCols, tier1, tier2, minN,
 
         nanFrac = mean(isnan(yv));
         nOK = sum(~isnan(yv));
-
         if nanFrac > maxNanFrac
             skipY = [skipY; {yn, sprintf("Too many NaNs (%.1f%%)", 100*nanFrac), nOK}]; %#ok<AGROW>
             continue;
@@ -397,9 +356,9 @@ function [tier3, skipY] = buildTier3SList(Tcore, factorCols, tier1, tier2, minN,
     end
 end
 
-%% ========================================================================
-% CORE HELPERS
-% ========================================================================
+%% ============================================================
+% CORE FUNCTIONS
+% ============================================================
 function name = pickVarName(T, candidates)
     vars = string(T.Properties.VariableNames);
     name = "";
@@ -413,7 +372,6 @@ function name = pickVarName(T, candidates)
     end
 end
 
-% --- Preprocessing: SNV (row-wise)
 function Xsnv = preprocess_snv(X)
     mu = mean(X, 2, 'omitnan');
     sd = std(X, 0, 2, 'omitnan');
@@ -421,7 +379,6 @@ function Xsnv = preprocess_snv(X)
     Xsnv = (X - mu) ./ sd;
 end
 
-% --- Preprocessing: SNV + SG derivative (derivOrd = 1 or 2)
 function Xout = preprocess_snv_sg(X, polyOrd, frameLen, derivOrd, delta)
     Xsnv = preprocess_snv(X);
     Xout = sg_derivative_rows(Xsnv, polyOrd, frameLen, derivOrd, delta);
@@ -429,29 +386,21 @@ end
 
 function Xd = sg_derivative_rows(X, k, f, deriv, delta)
     if mod(f,2)==0; error('SG_FRAME_LEN must be odd.'); end
-    if ~(deriv==1 || deriv==2); error('Only 1st/2nd derivatives are supported.'); end
-
     [~, g] = sgolay(k, f);
     halfWin = (f-1)/2;
     dFilt = factorial(deriv) * g(:, deriv+1) / (delta^deriv);
-
     Xd = nan(size(X));
     for i=1:size(X,1)
         xi = X(i,:);
         leftPad  = fliplr(xi(2:halfWin+1));
         rightPad = fliplr(xi(end-halfWin:end-1));
         xpad = [leftPad, xi, rightPad];
-
         yi = conv(xpad, fliplr(dFilt').', 'same');
         yi = yi(halfWin+1:end-halfWin);
-
         Xd(i,:) = yi;
     end
 end
 
-%% ========================================================================
-% NESTED PLSR (repeated stratified outer CV + inner LV selection)
-% ========================================================================
 function [predLong, repMetrics, pooledMetrics, vipAll, lvAll] = runNestedPLSR(X, y, strata, part, preprocessFcn, params)
 
     n = numel(y);
@@ -494,7 +443,6 @@ function [predLong, repMetrics, pooledMetrics, vipAll, lvAll] = runNestedPLSR(X,
 
             lvMax = min(params.lvMaxCap, size(Xtr_p,1)-2);
             lvMax = max(1, min(lvMax, size(Xtr_p,2)));
-
             lvSel = selectLV_innerCV(Xtr_p, ytr, params.Kinner, lvMax);
 
             [~,~,~,~,beta,PCTVAR,~,stats] = plsregress(Xtr_p, ytr, lvSel);
@@ -514,13 +462,13 @@ function [predLong, repMetrics, pooledMetrics, vipAll, lvAll] = runNestedPLSR(X,
         end
 
         m = computeMetrics(y, yhat_r);
-        repMetrics.repeat(r)    = r;
-        repMetrics.R2(r)        = m.R2;
-        repMetrics.RMSE(r)      = m.RMSE;
-        repMetrics.MAE(r)       = m.MAE;
-        repMetrics.Bias(r)      = m.Bias;
-        repMetrics.RPD(r)       = m.RPD;
-        repMetrics.LV_median(r) = median(lv_r, 'omitnan');
+        repMetrics.repeat(r)   = r;
+        repMetrics.R2(r)       = m.R2;
+        repMetrics.RMSE(r)     = m.RMSE;
+        repMetrics.MAE(r)      = m.MAE;
+        repMetrics.Bias(r)     = m.Bias;
+        repMetrics.RPD(r)      = m.RPD;
+        repMetrics.LV_median(r)= median(lv_r, 'omitnan');
     end
 
     pooledMetrics = computeMetrics(predLong.y_true, predLong.y_pred);
@@ -529,11 +477,9 @@ end
 function foldID = makeStratifiedFolds(strata, K, part, enforcePartCoverage, maxTries)
     n = numel(strata);
     foldID = zeros(n,1);
-    partsAll = categories(part);
 
     for t = 1:maxTries
         foldID(:) = 0;
-
         cats = categories(strata);
         for i=1:numel(cats)
             idx = find(strata == cats{i});
@@ -543,11 +489,10 @@ function foldID = makeStratifiedFolds(strata, K, part, enforcePartCoverage, maxT
             end
         end
 
-        if ~enforcePartCoverage
-            return;
-        end
+        if ~enforcePartCoverage; return; end
 
         ok = true;
+        partsAll = categories(part);
         for k=1:K
             trainIdx = (foldID ~= k);
             pTrain = categories(removecats(part(trainIdx)));
@@ -556,15 +501,12 @@ function foldID = makeStratifiedFolds(strata, K, part, enforcePartCoverage, maxT
             end
         end
 
-        if ok
-            return;
-        end
+        if ok; return; end
     end
 
-    error('Could not create stratified folds with Part coverage after %d attempts.', maxTries);
+    error('Could not create stratified folds satisfying Part coverage after %d tries.', maxTries);
 end
 
-% --- Inner CV LV selection (min RMSE)
 function lvSel = selectLV_innerCV(Xtr, ytr, Kinner, lvMax)
     n = numel(ytr);
     cv = cvpartition(n, 'KFold', Kinner);
@@ -583,7 +525,6 @@ function lvSel = selectLV_innerCV(Xtr, ytr, Kinner, lvMax)
     [~, lvSel] = min(rmse);
 end
 
-% --- Scaling (TRAIN-set stats)
 function [Xcs, muX, sdX] = centreScale(X)
     muX = mean(X, 1, 'omitnan');
     sdX = std(X, 0, 1, 'omitnan');
@@ -595,27 +536,21 @@ function Xcs = applyCentreScale(X, muX, sdX)
     Xcs = (X - muX) ./ sdX;
 end
 
-% --- VIP (per outer fit; raw)
 function vip = vip_plsr(stats, PCTVAR, p)
-    W  = stats.W;            % p × LV
+    W = stats.W;
     LV = size(W,2);
-
     if size(PCTVAR,1) >= 2
         yExp = PCTVAR(2,1:LV);
     else
         yExp = ones(1,LV)/LV;
     end
-
-    denom = sum(yExp);
-    if denom==0; denom=eps; end
-
+    denom = sum(yExp); if denom==0; denom=eps; end
     vip = zeros(p,1);
     for j=1:p
         vip(j) = sqrt( p * sum( yExp(:) .* (W(j,:).^2)' ) / denom );
     end
 end
 
-% --- Metrics
 function m = computeMetrics(y, yhat)
     y = y(:); yhat = yhat(:);
     ok = ~isnan(y) & ~isnan(yhat);
@@ -623,7 +558,6 @@ function m = computeMetrics(y, yhat)
 
     SSE = sum((y - yhat).^2);
     SST = sum((y - mean(y)).^2);
-
     m.R2   = 1 - SSE / max(SST, eps);
     m.RMSE = sqrt(mean((y - yhat).^2));
     m.MAE  = mean(abs(y - yhat));

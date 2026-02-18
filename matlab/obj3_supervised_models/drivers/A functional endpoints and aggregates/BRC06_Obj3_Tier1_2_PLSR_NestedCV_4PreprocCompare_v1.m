@@ -1,56 +1,40 @@
-% BRC06_OBJ3_PLSR_NestedCV_Tier1_Tier2_4PreprocCompare_v1.m
-% -------------------------------------------------------------------------
-% Objective 3 (public/audit-ready):
-% Benchmark PLSR predictive performance under four spectral preprocessing
-% pipelines using repeated nested cross-validation.
+% BRC06_Obj3_Tier1_2_PLSR_NestedCV_4PreprocCompare_v1.m
+% ------------------------------------------------------------
+% Objective 3 (audit-ready):
+% Repeated nested cross-validation comparison of four spectral
+% preprocessing strategies for PLS-R prediction of:
+%   - Tier 1 (primary functional endpoints), and
+%   - Tier 2 (chemical-class aggregates),
+% using the SAME fold plan per response to ensure a fair comparison.
 %
-% Preprocessing configurations compared:
-%   (1) RAW         : no preprocessing
-%   (2) SNV         : Standard Normal Variate (row-wise)
-%   (3) SNV_SG1st   : SNV + Savitzky–Golay 1st derivative (poly=2, window=11)
-%   (4) SNV_SG2nd   : SNV + Savitzky–Golay 2nd derivative (poly=2, window=11)
+% Preprocessing configurations:
+%   (1) RAW
+%   (2) SNV
+%   (3) SNV + Savitzky–Golay 1st derivative (poly=2, window=11, Δ=1 nm)
+%   (4) SNV + Savitzky–Golay 2nd derivative (poly=2, window=11, Δ=1 nm)
 %
 % Validation design:
-%   - Repeated nested CV:
-%       Outer CV: K=5 folds, repeated R=50 times
-%       Stratification: Maturity × N2 (to balance key experimental strata)
-%       Optional guardrail: each outer TRAIN split must contain all Part levels
-%   - Inner CV (LV selection): Kinner=4 folds; select LV by minimum RMSE
-%     with LV upper bound: LVmax = min(15, nTrain-2, p)
+%   - Outer CV: K=5 folds, repeated R=50 times
+%   - Stratification: Maturity × N2 (outer folds)
+%   - Guardrail (optional, ON): each outer TRAIN set must contain all Part levels
+%   - Inner CV: Kinner=4 (LV selection by minimum inner-CV RMSE)
+%   - LV cap: LVmax = min(15, nTrain-2, p)
 %
-% Outcomes (two tiers; edit lists below to match your matrix headers):
-%   - Tier 1: primary endpoints (e.g., yield, phenolics, antioxidant assays)
-%   - Tier 2: chemical class aggregates (SUM_* variables)
+% Inputs:
+%   - Excel matrix: INPUT_XLSX / SHEET_NAME (see USER PARAMETERS)
+%   - Spectral columns named: nm_<integerWavelength> (e.g., nm_250 ... nm_1800)
+%   - Factor columns detected robustly (Spanish/English headers supported):
+%       Variety/Cultivar, Extraction, Part, Maturity, N2 (see pickVarName())
 %
-% Outputs (per tier and per preprocessing config):
-%   - OBJ3_Summary_<Tier>_<Config>.xlsx
-%       pooled + repeat-level summary metrics per response variable
-%   - OBJ3_RepeatMetrics_<Tier>_<Config>.xlsx
-%       metrics per repeat (R2, RMSE, MAE, Bias, RPD, LV_median)
-%   - OBJ3_Predictions_<Tier>_<Config>.xlsx
-%       long-format predictions; one Excel sheet per response variable Y
-%   - OBJ3_VIPraw_<Tier>_<Config>.mat
-%       raw VIP vectors per outer fit (for downstream VIP stability mapping)
-%
-% Additional tier-level comparison workbook:
-%   - OBJ3_Compare_4CFG_<Tier>.xlsx
-%       pooled/long summaries across all 4 preprocessing configurations
-%
-% Input requirements:
-%   - Excel matrix with:
-%       * spectral columns named nm_<integer> (e.g., nm_250 ... nm_1800)
-%       * factor columns for Part, Maturity, N2 (names matched robustly)
-%       * response columns for Tier 1 / Tier 2 variables
-%
-% MATLAB toolboxes:
-%   - Statistics and Machine Learning Toolbox (plsregress, cvpartition)
-%   - Signal Processing Toolbox (sgolay) for SG derivatives
-%
-% Notes:
-%   - This script writes outputs to OUTDIR relative to the current working
-%     directory (pwd). Run from your repo root or set OUTDIR explicitly.
-%   - Default "core" filter (cultivar/extraction) can be edited below.
-% -------------------------------------------------------------------------
+% Outputs (written to OUTDIR = ./Objetivo_3a):
+%   Per configuration and per tier:
+%     - OBJ3_Summary_<Tier>_<Config>.xlsx
+%     - OBJ3_RepeatMetrics_<Tier>_<Config>.xlsx
+%     - OBJ3_Predictions_<Tier>_<Config>.xlsx  (one sheet per Y)
+%     - OBJ3_VIPraw_<Tier>_<Config>.mat        (VIP per outer fit; for stability)
+%   Per tier:
+%     - OBJ3_Compare_4CFG_<Tier>.xlsx          (all configs together)
+% ------------------------------------------------------------
 
 clear; clc;
 
@@ -60,7 +44,8 @@ clear; clc;
 INPUT_XLSX  = 'Matriz_Brocoli_SUM_1nm_ASCII.xlsx';
 SHEET_NAME  = 'Matriz';
 
-OUTDIR      = fullfile(pwd, 'OBJ3_OUT_4CFG');
+% All outputs are written here (required by the manuscript workflow)
+OUTDIR      = fullfile(pwd, 'Objetivo_3a');
 if ~exist(OUTDIR,'dir'); mkdir(OUTDIR); end
 
 % Core definition (edit if needed)
