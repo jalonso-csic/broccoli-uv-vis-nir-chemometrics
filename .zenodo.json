@@ -1,14 +1,11 @@
 {
   "title": "broccoli-uv-vis-nir-chemometrics: Reproducible MATLAB pipelines for UV-VIS-NIR spectroscopy in broccoli by-products",
-  "version": "v1.0.0",
+  "version": "v1.0.1",
   "upload_type": "software",
-  "description": "Reproducible MATLAB workflows for UV-VIS-NIR reflectance spectroscopy preprocessing, modelling, interpretability, and decision support in broccoli by-product datasets. The repository includes a curated input matrix and objective-specific scripts covering univariate factorial inference, spectral structure analysis, nested cross-validation partial least squares regression, VIP stability assessment, and within-domain prioritisation.",
+  "description": "Reproducible MATLAB workflows for UV-VIS-NIR reflectance spectroscopy preprocessing, modelling, interpretability, and decision support in broccoli by-product datasets.",
   "creators": [
     {
-      "name": "Alonso, Jesus",
-      "affiliation": "ICTAN-CSIC/INURA-UEX",
-      "orcid": "0009-0000-1150-9177",
-      "type": "ProjectMember"
+      "name": "Alonso, Jesus"
     }
   ],
   "keywords": [
@@ -17,20 +14,9 @@
     "UV-VIS-NIR spectroscopy",
     "reflectance spectroscopy",
     "chemometrics",
-    "MATLAB",
-    "PLS regression",
-    "VIP stability",
-    "spectral preprocessing",
-    "food analysis"
+    "MATLAB"
   ],
   "license": "mit",
   "access_right": "open",
-  "language": "eng",
-  "related_identifiers": [
-    {
-      "identifier": "ADD_ARTICLE_DOI_OR_URL_HERE",
-      "relation": "isSupplementTo",
-      "resource_type": "publication-article"
-    }
-  ]
+  "language": "eng"
 }
