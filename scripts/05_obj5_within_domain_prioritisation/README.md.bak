@@ -1,10 +1,10 @@
-# 05. Objective 5 - Within-domain prioritisation and decision support
+# 05. Objective 5 — Within-domain prioritisation and decision support
 
 ## Script
 `BRC10_obj5_Prioritisation_v1.m`
 
 ## Purpose
-This script performs Objective 5 by generating a within-domain prioritisation framework for the broccoli core subset. It combines robust standardisation, percentile-based criterion profiling, composite-score ranking, and redundancy auditing to support decision-making across biologically meaningful Part x Maturity combinations.
+This script performs Objective 5 by generating a within-domain prioritisation framework for the broccoli core subset. It combines robust standardisation, percentile-based criterion profiling, composite-score ranking, and redundancy auditing to support decision-making across biologically meaningful Part × Maturity combinations.
 
 The script produces:
 - two criterion-profile heatmaps,
@@ -50,9 +50,9 @@ The script reads:
 The script detects the following factor columns robustly:
 
 - cultivar: one of `Variedad`, `Variety`, `Cultivar`
-- extraction: one of `Extraccion`, `Extraccion`, `Extraction`
+- extraction: one of `Extraccion`, `Extracción`, `Extraction`
 - part: one of `Parte`, `Part`
-- maturity: one of `Maduracion`, `Maduracion`, `Maturity`
+- maturity: one of `Maduracion`, `Maduración`, `Maturity`
 
 ### Required domain filter
 The script keeps only rows matching:
@@ -133,7 +133,7 @@ For each selected criterion, the script computes a robust z score using:
 - the median absolute deviation (MAD),
 - and, when needed, an interquartile-range fallback.
 
-### 6. Aggregate by Part x Maturity combination
+### 6. Aggregate by Part × Maturity combination
 The script groups samples by the translated combination label:
 
 `Part | Maturity`
@@ -176,7 +176,7 @@ The y-axis of the criterion-profile heatmaps is ordered manually using:
 - `Commercial`
 - `Over-mature`
 
-This ordering is applied to the grouped Part x Maturity combinations.
+This ordering is applied to the grouped Part × Maturity combinations.
 
 ## Output directory
 All outputs are written to:
@@ -207,7 +207,7 @@ Saved as both `.fig` and `.png`:
 - `Fig_obj5_2_Ranking_CompositePCTL.fig`
 - `Fig_obj5_2_Ranking_CompositePCTL.png`
 
-This figure shows the ranking of Part x Maturity combinations based on the percentile-based composite score.
+This figure shows the ranking of Part × Maturity combinations based on the percentile-based composite score.
 
 ### Figure 3
 Saved as both `.fig` and `.png`:
@@ -305,4 +305,3 @@ Run directly in MATLAB:
 
 ```matlab
 BRC10_obj5_Prioritisation_v1
-

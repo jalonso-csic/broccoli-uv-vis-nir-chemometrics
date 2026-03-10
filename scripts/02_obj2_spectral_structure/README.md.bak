@@ -1,4 +1,4 @@
-# 02. Objective 2 - Spectral structure analysis for Section 3.2
+# 02. Objective 2 — Spectral structure analysis for Section 3.2
 
 ## Script
 `BRC_obj2_Section32_SpectralStructure_run_v1.m`
@@ -10,7 +10,7 @@ The workflow combines:
 - spectral preprocessing,
 - descriptive spectral visualization,
 - principal component analysis (PCA),
-- multivariate factorial inference using a Freedman-Lane permutation framework.
+- multivariate factorial inference using a Freedman–Lane permutation framework.
 
 All outputs are written to a single reproducible root directory.
 
@@ -18,7 +18,7 @@ All outputs are written to a single reproducible root directory.
 The script is designed to evaluate how spectral variation is structured across:
 - **Part**
 - **Maturity**
-- **Part x Maturity**
+- **Part × Maturity**
 
 The analysis is performed on wavelength variables stored as `nm_*` columns in the input matrix.
 
@@ -95,7 +95,7 @@ The script extracts all columns starting with `nm_`, parses the wavelength value
 - `SEED0 = 123`
 - `N_PERM = 4999`
 
-### Savitzky-Golay settings
+### Savitzky–Golay settings
 - `SG_POLY_ORDER = 2`
 - `SG_FRAME_LEN = 11`
 
@@ -130,14 +130,14 @@ Typical mappings include:
 #### Maturity translation
 Typical mappings include:
 - `inmadur*` ? `Immature`
-- `comercial`, `commercial`, `Ã³ptimo`, `optimo` ? `Commercial`
+- `comercial`, `commercial`, `óptimo`, `optimo` ? `Commercial`
 - `sobre*`, `over*`, `senescent` ? `Overmature`
 
 ### 5. Spectral preprocessing
 The script computes:
 - SNV-normalized spectra,
-- SNV + Savitzky-Golay first derivative,
-- SNV + Savitzky-Golay second derivative.
+- SNV + Savitzky–Golay first derivative,
+- SNV + Savitzky–Golay second derivative.
 
 Autoscaling is then applied to the SNV and SNV+SG2 matrices for PCA and multivariate inference.
 
@@ -152,16 +152,16 @@ The script generates:
 Explained variance is exported for the selected number of principal components.
 
 ### 8. Multivariate factorial inference
-The script performs a Freedman-Lane permutation-based multivariate factorial test in spectral space for:
+The script performs a Freedman–Lane permutation-based multivariate factorial test in spectral space for:
 - **Part**
 - **Maturity**
-- **Part x Maturity**
+- **Part × Maturity**
 
 This is executed separately for:
 - SNV-preprocessed spectra,
 - SNV + SG2-preprocessed spectra.
 
-Benjamini-Hochberg false discovery rate correction is applied to the permutation p-values.
+Benjamini–Hochberg false discovery rate correction is applied to the permutation p-values.
 
 ## Output structure
 All outputs are written under:
@@ -229,7 +229,7 @@ Run metadata, including:
 - wavelength spacing,
 - permutation count,
 - random seed,
-- Savitzky-Golay parameters,
+- Savitzky–Golay parameters,
 - manifest usage,
 - archived script name.
 
@@ -260,10 +260,10 @@ Explained and cumulative variance for PCA on SNV data.
 Explained and cumulative variance for PCA on SNV + SG2 data.
 
 ### `Table4_SNV`
-Freedman-Lane multivariate factorial test results for SNV data.
+Freedman–Lane multivariate factorial test results for SNV data.
 
 ### `Table5_SNV_SG2`
-Freedman-Lane multivariate factorial test results for SNV + SG2 data.
+Freedman–Lane multivariate factorial test results for SNV + SG2 data.
 
 ## Statistical details
 
@@ -276,9 +276,9 @@ PCA is computed using singular value decomposition (`svd`) with:
 For each preprocessing configuration, the script tests:
 - **Part**
 - **Maturity**
-- **Part x Maturity**
+- **Part × Maturity**
 
-using a Freedman-Lane permutation framework.
+using a Freedman–Lane permutation framework.
 
 The exported statistics include:
 - `df_term`
@@ -292,7 +292,7 @@ The exported statistics include:
 - `nPerm`
 
 ### Multiple testing correction
-Benjamini-Hochberg correction is applied to the permutation p-values and exported as `q_BH`.
+Benjamini–Hochberg correction is applied to the permutation p-values and exported as `q_BH`.
 
 ## How to run
 
@@ -300,4 +300,3 @@ Run directly from MATLAB:
 
 ```matlab
 BRC_obj2_Section32_SpectralStructure_run_v1
-

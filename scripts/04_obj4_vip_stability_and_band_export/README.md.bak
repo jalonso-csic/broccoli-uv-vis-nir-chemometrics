@@ -1,4 +1,4 @@
-# 04. Objective 4 - VIP stability figures and operational band export
+# 04. Objective 4 — VIP stability figures and operational band export
 
 ## Script
 `BRC07_obj4_VIPStability_SelectedTiers_FigsAndBands_SNV_SG2nd_v1.m`
@@ -11,7 +11,7 @@ The analysis is restricted to a selected subset of endpoints from:
 - **Tier 2**
 - **Tier 3S**
 
-and uses VIP information derived from the **SNV + Savitzky-Golay second derivative** preprocessing pipeline.
+and uses VIP information derived from the **SNV + Savitzky–Golay second derivative** preprocessing pipeline.
 
 ## Analytical scope
 The script reads raw VIP outputs previously generated in Objective 3 and computes wavelength-wise VIP stability for a manually selected panel of endpoints.
@@ -72,7 +72,7 @@ The script applies a strict manual order for the endpoints included in Figure 1.
 ## Main preprocessing context
 The script assumes that the raw VIP values were generated using:
 
-- **SNV + Savitzky-Golay second derivative**
+- **SNV + Savitzky–Golay second derivative**
 - polynomial order: `2`
 - window length: `11`
 
@@ -219,4 +219,3 @@ Run directly in MATLAB:
 
 ```matlab
 BRC07_obj4_VIPStability_SelectedTiers_FigsAndBands_SNV_SG2nd_v1
-

@@ -1,20 +1,20 @@
-# 01. Objective 1 - Univariate factorial inference and supplementary screening package
+# 01. Objective 1 — Univariate factorial inference and supplementary screening package
 
 ## Script
 `BRC00_Obj1_FullSupplementPack_v1.m`
 
 ## Purpose
-This script performs the full Objective 1 analytical workflow for univariate factorial inference on broccoli by-product extracts. It generates the main and supplementary outputs used to quantify the effects of **Part**, **Maturity**, and **Part x Maturity** on functional endpoints, chemical-class aggregates, and metabolite-level variables.
+This script performs the full Objective 1 analytical workflow for univariate factorial inference on broccoli by-product extracts. It generates the main and supplementary outputs used to quantify the effects of **Part**, **Maturity**, and **Part × Maturity** on functional endpoints, chemical-class aggregates, and metabolite-level variables.
 
 The workflow is designed to support an auditable and reproducible analysis of structured biochemical variability across plant tissues and maturity stages.
 
 ## Relation to the manuscript
-This script supports the factorial inference reported for the broccoli UV-VIS-NIR study, specifically the section devoted to univariate factorial analysis of chemical and functional endpoints. It provides the computational basis for:
+This script supports the factorial inference reported for the broccoli UV–VIS–NIR study, specifically the section devoted to univariate factorial analysis of chemical and functional endpoints. It provides the computational basis for:
 
 - screening eligible endpoints,
 - fitting endpoint-wise Type III ANOVA models,
-- estimating partial effect sizes as partial eta-squared (`eta_p^2`),
-- controlling multiplicity with Benjamini-Hochberg false discovery rate correction,
+- estimating partial effect sizes as partial eta-squared (`?p²`),
+- controlling multiplicity with Benjamini–Hochberg false discovery rate correction,
 - generating the main heatmap for Tier 1 and Tier 2 responses,
 - generating the supplementary Tier 3 metabolite-level outputs.
 
@@ -57,7 +57,7 @@ Main analysis matrix containing:
 
 Accepted factor names:
 - Part: `Parte` or `Part`
-- Maturity: `Maduracion`, `Maduracion`, or `Maturity`
+- Maturity: `Maduracion`, `Maduración`, or `Maturity`
 
 #### 2. `Tier 1`
 Expected structure:
@@ -97,7 +97,7 @@ The script uses the following default parameters unless overridden through the `
 For each retained response, the script fits a fixed-effects two-factor model with:
 - **Part**
 - **Maturity**
-- **Part x Maturity**
+- **Part × Maturity**
 
 Type III sums of squares are used throughout.
 
@@ -111,10 +111,10 @@ Each response variable is screened before analysis using the following criteria:
 ### Effect size
 Partial effect size is reported as partial eta-squared:
 
-`eta_p^2 = SS_term / (SS_term + SS_error)`
+`?p² = SS_term / (SS_term + SS_error)`
 
 ### Multiplicity correction
-Benjamini-Hochberg false discovery rate correction is applied as follows:
+Benjamini–Hochberg false discovery rate correction is applied as follows:
 
 - **Tier 1 and Tier 2**: corrected within each tier across all term-tests
 - **Tier 3**: corrected across all term-tests in Tier 3
@@ -197,4 +197,3 @@ Run from MATLAB with default settings:
 
 ```matlab
 BRC00_Obj1_FullSupplementPack_v1
-
