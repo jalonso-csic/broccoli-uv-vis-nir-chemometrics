@@ -3,11 +3,12 @@
 % Figures (PNG + FIG) + Excel compilation.
 %
 % Updates:
-%   1. Automatic script name detection (requires saving file first).
-%   2. Removed "(Tier 3)" text from Indolic marker index label.
-%   3. Output folder: "Objetivo_5".
-%   4. EXCLUDED "Extraction_yield" completely.
-%   5. Logic: Composite score based on percentile ranks (0-1).
+%   1. Automatic script name detection.
+%   2. TWO FACTORS (NO N).
+%   3. FIGURE 1 SPLIT INTO TWO PANELS:
+%       - Fig 1A: Tier 1 & 2 (strict manual order)
+%       - Fig 1B: Tier 3 (selected metabolites ordered by chemical similarity)
+%   4. Composite score ranking based on Tier 1 & 2.
 %
 % Core domain: Pathernon × Ultrasonido (UAE).
 % ------------------------------------------------------------
@@ -16,53 +17,53 @@ clear; clc; close all;
 %% =========================
 % 1. AUTOMATIC SCRIPT NAME DETECTION
 % =========================
-% NOTA: MATLAB te pedirá guardar el archivo antes de ejecutarlo.
-% Una vez guardado, esta función coge el nombre automáticamente.
 scriptName = mfilename; 
-if isempty(scriptName); scriptName = 'BRC10_Prioritisation_ManualRun'; end
+if isempty(scriptName); scriptName = 'BRC10_obj5_Prioritisation_v1'; end
 fprintf('Running script: %s\n', scriptName);
 
 %% =========================
 % USER PARAMETERS
 % =========================
-INPUT_XLSX  = 'Matriz_Brocoli_SUM_1nm_ASCII.xlsx';
+INPUT_XLSX  = 'Matriz_Brocoli_Sin_N.xlsx';
 SHEET_NAME  = 'Matriz';
 
-% Output folder
 OUTDIR = fullfile(pwd, 'Objetivo_5');
 if ~exist(OUTDIR,'dir'); mkdir(OUTDIR); end
 
 CULTIVAR_CORE   = "Pathernon";
 EXTRACTION_CORE = "Ultrasonido";
+TOPN_PROFILE    = 15;    
+RHO_THRESHOLD   = 0.85;  
 
-TOPN_PROFILE    = 15;    % number of top combinations shown in criterion heatmap
-RHO_THRESHOLD   = 0.85;  % shown in redundancy-audit title
+% ---------------------------------------------------------
+% CRITERIA LISTS (variables)
+% ---------------------------------------------------------
 
-% Criteria used for redundancy audit (full set)
-% NOTE: Extraction_yield removed.
-CRIT_FULL = string([
-    "Total_phenolics"
-    "DPPH"
-    "ABTS"
+% LIST 1: TIER 1 and TIER 2 (strict manual order)
+CRIT_T1T2 = string([
     "Antihypertensive_act."
-    "SUM_GSL_indolic"
-    "SUM_Amino_acids"
+    "Total_phenolics"
+    "ABTS"
+    "DPPH"
     "SUM_GSL_total"
-    "Indolic_marker_index_T3"   % Sum of 3 indolic compounds
-]);
-
-% Non-redundant criteria used for prioritisation
-% NOTE: Extraction_yield removed.
-CRIT_NONRED = string([
-    "Total_phenolics"
-    "DPPH"
-    "ABTS"
-    "Antihypertensive_act."
     "SUM_GSL_indolic"
-    "SUM_Amino_acids"
 ]);
 
-% Equal weights
+% LIST 2: TIER 3 (ordered by chemical similarity: GSL -> flavonols -> amino acids)
+CRIT_T3 = string([
+    "Glucobrassicin"
+    "Methoxyglucobrassicin_1"
+    "Methoxyglucobrassicin_2"
+    "Km_3_diglucoside_7_diglucoside"
+    "K_3_O_sinapoyldiglucoside"
+    "L_Phenylalanine"
+]);
+
+% Combination used for the correlation matrix (redundancy audit)
+CRIT_FULL = [CRIT_T1T2; CRIT_T3];
+
+% Global ranking (prioritisation) is based on the primary functional profile
+CRIT_NONRED = CRIT_T1T2;
 WEIGHTS = ones(numel(CRIT_NONRED),1);
 
 %% =========================
@@ -74,15 +75,14 @@ opts.VariableNamingRule = 'preserve';
 T = readtable(INPUT_XLSX, opts);
 
 %% =========================
-% IDENTIFY FACTOR COLUMNS
+% IDENTIFY FACTOR COLUMNS (NO N)
 % =========================
 colVar = pickVarName(T, ["Variedad","Variety","Cultivar"]);
 colExt = pickVarName(T, ["Extraccion","Extracción","Extraction"]);
 colPart= pickVarName(T, ["Parte","Part"]);
 colMat = pickVarName(T, ["Maduracion","Maduración","Maturity"]);
-colN2  = pickVarName(T, ["Aplicacion_N2","Aplicación_N2","Aplicación N2","N2","Nitrogen"]);
 
-assert(colVar~="" && colExt~="" && colPart~="" && colMat~="" && colN2~="", ...
+assert(colVar~="" && colExt~="" && colPart~="" && colMat~="", ...
     'Missing required factor columns.');
 
 %% =========================
@@ -92,57 +92,50 @@ varStr = string(T.(colVar));
 extStr = string(T.(colExt));
 isCore = strcmpi(strtrim(varStr), CULTIVAR_CORE) & strcmpi(strtrim(extStr), EXTRACTION_CORE);
 Tcore  = T(isCore, :);
-
 fprintf('Core subset (%s × %s): n = %d\n', CULTIVAR_CORE, EXTRACTION_CORE, height(Tcore));
 assert(height(Tcore) > 0, 'Core subset is empty.');
 
 %% =========================
-% CREATE Tier-3 indolic marker index (T3)
-% =========================
-needT3 = ~ismember("Indolic_marker_index_T3", string(Tcore.Properties.VariableNames));
-if needT3
-    req = ["Glucobrassicin","Methoxyglucobrassicin_1","Methoxyglucobrassicin_2"];
-    ok = all(ismember(req, string(Tcore.Properties.VariableNames)));
-    if any(contains(CRIT_FULL, "Indolic_marker_index_T3"))
-        assert(ok, 'Tier-3 indolic compounds not found to build Indolic_marker_index_T3.');
-        Tcore.("Indolic_marker_index_T3") = ...
-            double(Tcore.("Glucobrassicin")) + double(Tcore.("Methoxyglucobrassicin_1")) + double(Tcore.("Methoxyglucobrassicin_2"));
-    end
-end
-
-%% =========================
-% KEEP ONLY AVAILABLE CRITERIA
+% CHECK AVAILABLE CRITERIA
 % =========================
 have = string(Tcore.Properties.VariableNames);
-CRIT_FULL   = CRIT_FULL(ismember(CRIT_FULL, have));
-CRIT_NONRED = CRIT_NONRED(ismember(CRIT_NONRED, have));
 
-assert(numel(CRIT_NONRED) >= 2, 'Too few criteria available.');
+% Alert if missing
+missing_t1 = CRIT_T1T2(~ismember(CRIT_T1T2, have));
+if ~isempty(missing_t1), warning("Faltan variables T1/T2: " + strjoin(missing_t1, ", ")); end
+missing_t3 = CRIT_T3(~ismember(CRIT_T3, have));
+if ~isempty(missing_t3), warning("Faltan variables T3: " + strjoin(missing_t3, ", ")); end
+
+CRIT_T1T2 = CRIT_T1T2(ismember(CRIT_T1T2, have));
+CRIT_T3   = CRIT_T3(ismember(CRIT_T3, have));
+CRIT_FULL = [CRIT_T1T2; CRIT_T3];
+CRIT_NONRED = CRIT_T1T2; 
+
 WEIGHTS = WEIGHTS(1:numel(CRIT_NONRED));
 WEIGHTS = WEIGHTS(:);
 
 %% =========================
-% TRANSLATE FACTORS
+% TRANSLATE FACTORS & COMBINATION LABELS (NO N)
 % =========================
 PartE = translatePart(string(Tcore.(colPart)));
 MatE  = translateMaturity(string(Tcore.(colMat)));
-N2E   = translateYesNo(string(Tcore.(colN2)));
-combo = strcat(PartE, " | ", MatE, " | ", N2E);
+
+combo = strcat(PartE, " | ", MatE);
 
 %% =========================
 % ROBUST Z SCORES
 % =========================
-Zfull = nan(height(Tcore), numel(CRIT_FULL));
-for j = 1:numel(CRIT_FULL)
-    y = double(Tcore.(CRIT_FULL(j)));
-    Zfull(:,j) = robustZ(y);
+Z_t1t2 = nan(height(Tcore), numel(CRIT_T1T2));
+for j = 1:numel(CRIT_T1T2)
+    Z_t1t2(:,j) = robustZ(double(Tcore.(CRIT_T1T2(j))));
 end
 
-Znr = nan(height(Tcore), numel(CRIT_NONRED));
-for j = 1:numel(CRIT_NONRED)
-    y = double(Tcore.(CRIT_NONRED(j)));
-    Znr(:,j) = robustZ(y);
+Z_t3 = nan(height(Tcore), numel(CRIT_T3));
+for j = 1:numel(CRIT_T3)
+    Z_t3(:,j) = robustZ(double(Tcore.(CRIT_T3(j))));
 end
+
+Zfull = [Z_t1t2, Z_t3];
 
 %% =========================
 % GROUP BY COMBINATION
@@ -153,166 +146,168 @@ nPerGroup = splitapply(@numel, combo, G);
 
 partG = splitapply(@(x) x(1), PartE, G);
 matG  = splitapply(@(x) x(1), MatE,  G);
-n2G   = splitapply(@(x) x(1), N2E,   G);
+
 pmLabel = strcat(partG, " | ", matG); 
 
-% Raw robust medians
-rawMed = nan(max(G), numel(CRIT_NONRED));
-for j = 1:numel(CRIT_NONRED)
-    y = double(Tcore.(CRIT_NONRED(j)));
-    rawMed(:,j) = splitapply(@(x) median(x,'omitnan'), y, G);
+% Robust-Z medians
+zMed_t1t2 = nan(max(G), numel(CRIT_T1T2));
+for j = 1:numel(CRIT_T1T2)
+    zMed_t1t2(:,j) = splitapply(@(x) median(x,'omitnan'), Z_t1t2(:,j), G);
 end
 
-% Z robust medians
-zMed = nan(max(G), numel(CRIT_NONRED));
-for j = 1:numel(CRIT_NONRED)
-    zMed(:,j) = splitapply(@(x) median(x,'omitnan'), Znr(:,j), G);
+zMed_t3 = nan(max(G), numel(CRIT_T3));
+for j = 1:numel(CRIT_T3)
+    zMed_t3(:,j) = splitapply(@(x) median(x,'omitnan'), Z_t3(:,j), G);
 end
 
 %% =========================
-% COMPOSITE SCORES (Percentile-based)
+% COMPOSITE SCORES (based on Tier 1 / Tier 2)
 % =========================
-W = WEIGHTS(:);
-W = W ./ max(sum(W), eps);
+W = WEIGHTS ./ max(sum(WEIGHTS), eps);
 
-% A) Score_Z (audit)
-maskZ = ~isnan(zMed);
-scoreZ = sum(zMed .* (W'.*maskZ), 2) ./ max(sum(W'.*maskZ,2), eps);
+% Tier 1 / Tier 2 percentiles
+P_t1t2 = calcPercentile(zMed_t1t2);
+% Tier 3 percentiles
+P_t3 = calcPercentile(zMed_t3);
 
-% B) Percentiles
-P = nan(size(zMed)); 
-for j = 1:size(zMed,2)
-    v = zMed(:,j);
-    ok = ~isnan(v);
-    if sum(ok) >= 3
-        r = tiedrank_local(v(ok));
-        P(ok,j) = (r - 0.5) ./ sum(ok);
-    end
-end
-maskP = ~isnan(P);
-scoreP = sum(P .* (W'.*maskP), 2) ./ max(sum(W'.*maskP,2), eps);
+% Score_Z and Score_P use Tier 1 / Tier 2 only for ranking
+maskZ = ~isnan(zMed_t1t2);
+scoreZ = sum(zMed_t1t2 .* (W'.*maskZ), 2) ./ max(sum(W'.*maskZ,2), eps);
+
+maskP = ~isnan(P_t1t2);
+scoreP = sum(P_t1t2 .* (W'.*maskP), 2) ./ max(sum(W'.*maskP,2), eps);
 
 [scoreSorted, ord] = sort(scoreP, 'descend');
 comboSorted = comboList(ord);
-scoreZ_sorted = scoreZ(ord);
 
 %% =========================
-% DISPLAY NAMES (Tier 3 Removed)
-% =========================
-dispFull = prettyCritNames(CRIT_FULL);
-dispNR   = prettyCritNames(CRIT_NONRED);
-
-%% =========================
-% FIGURE 1: Criterion Profile
+% Y-AXIS ORDERING FOR THE HEATMAPS
 % =========================
 partOrder = ["Leaf","Inflorescence","Stem"];
 matOrder  = ["Bud","Commercial","Over-mature"];
+
 p = strtrim(string(partG));
 m = strtrim(string(matG));
-n = strtrim(string(n2G));
+
 [tfP, partOrdAll] = ismember(lower(p), lower(partOrder));
 [tfM, matOrdAll]  = ismember(lower(m), lower(matOrder));
 partOrdAll(~tfP) = numel(partOrder) + 1;
 matOrdAll(~tfM)  = numel(matOrder)  + 1;
 
-idxNo  = find(strcmpi(n, "No"));
-idxYes = find(strcmpi(n, "Yes"));
-[~, sNo]  = sortrows([partOrdAll(idxNo),  matOrdAll(idxNo)]);
-[~, sYes] = sortrows([partOrdAll(idxYes), matOrdAll(idxYes)]);
-idxNoPlot  = idxNo(sNo);
-idxYesPlot = idxYes(sYes);
+[~, sAll] = sortrows([partOrdAll(:), matOrdAll(:)]);
 
-Mno  = P(idxNoPlot, :);
-Myes = P(idxYesPlot, :);
-Yno  = pmLabel(idxNoPlot);
-Yyes = pmLabel(idxYesPlot);
+Yplot = pmLabel(sAll);
 
-fig1 = figure('Color','w','Position',[80 80 1250 720]);
-t = tiledlayout(1,2,'TileSpacing','compact','Padding','compact');
+%% =========================
+% DISPLAY NAMES
+% =========================
+dispT1T2 = prettyCritNames(CRIT_T1T2);
+dispT3   = prettyCritNames(CRIT_T3);
+dispFull = [dispT1T2; dispT3];
 
-nexttile;
-imagesc(Mno); axis tight; caxis([0 1]);
-set(gca,'YTick',1:numel(Yno),'YTickLabel',Yno, ...
-        'XTick',1:numel(dispNR),'XTickLabel',dispNR, ...
+%% =========================
+% FIGURE 1A: Criterion Profile (Tier 1 & 2)
+% =========================
+Mplot_t1t2 = P_t1t2(sAll, :);
+
+fig1A = figure('Color','w','Position',[80 80 800 650]);
+imagesc(Mplot_t1t2); axis tight; caxis([0 1]);
+
+set(gca,'YTick',1:numel(Yplot),'YTickLabel',Yplot, ...
+        'XTick',1:numel(dispT1T2),'XTickLabel',dispT1T2, ...
         'FontName','Times New Roman','FontSize',10);
 xtickangle(35);
-ylabel('Part × maturity (ordered)', 'FontName','Times New Roman','FontSize',12);
-xlabel('Criteria', 'FontName','Times New Roman','FontSize',12);
-title('N₂ = No', 'FontName','Times New Roman','FontSize',12);
 
-nexttile;
-imagesc(Myes); axis tight; caxis([0 1]);
-set(gca,'YTick',1:numel(Yyes),'YTickLabel',Yyes, ...
-        'XTick',1:numel(dispNR),'XTickLabel',dispNR, ...
+ylabel('Part × maturity (ordered)', 'FontName','Times New Roman','FontSize',12);
+title('Criterion-level profiles: Tier 1 & Tier 2', 'FontName','Times New Roman','FontSize',12);
+cb = colorbar; ylabel(cb, 'Percentile rank (0–1)', 'FontName','Times New Roman','FontSize',10);
+
+saveBoth(fig1A, OUTDIR, 'Fig_obj5_1A_Profile_Tier1_Tier2');
+
+%% =========================
+% FIGURE 1B: Criterion Profile (Tier 3)
+% =========================
+Mplot_t3 = P_t3(sAll, :);
+
+fig1B = figure('Color','w','Position',[120 120 800 650]);
+imagesc(Mplot_t3); axis tight; caxis([0 1]);
+
+set(gca,'YTick',1:numel(Yplot),'YTickLabel',Yplot, ...
+        'XTick',1:numel(dispT3),'XTickLabel',dispT3, ...
         'FontName','Times New Roman','FontSize',10);
 xtickangle(35);
+
 ylabel('Part × maturity (ordered)', 'FontName','Times New Roman','FontSize',12);
-xlabel('Criteria', 'FontName','Times New Roman','FontSize',12);
-title('N₂ = Yes', 'FontName','Times New Roman','FontSize',12);
+title('Criterion-level profiles: Selected Tier 3 Metabolites', 'FontName','Times New Roman','FontSize',12);
+cb = colorbar; ylabel(cb, 'Percentile rank (0–1)', 'FontName','Times New Roman','FontSize',10);
 
-cb = colorbar; cb.Layout.Tile = 'east';
-ylabel(cb, 'Percentile rank (0–1)', 'FontName','Times New Roman','FontSize',10);
-title(t, 'Objective 5: Criterion-level profiles', 'FontName','Times New Roman','FontSize',12);
-
-saveBoth(fig1, OUTDIR, 'Fig_obj5_CriterionProfile_ByN2_PCTL_Ordered');
+saveBoth(fig1B, OUTDIR, 'Fig_obj5_1B_Profile_Tier3_Selected');
 
 %% =========================
 % FIGURE 2: Ranking
 % =========================
-fig2 = figure('Color','w','Position',[120 120 1100 800]);
+fig2 = figure('Color','w','Position',[160 160 1000 600]);
 barh(scoreSorted);
 set(gca,'YDir','reverse', ...
         'YTick',1:numel(scoreSorted), 'YTickLabel',comboSorted, ...
         'FontName','Times New Roman','FontSize',10);
 xlabel('Composite prioritisation score (0–1)', 'FontName','Times New Roman','FontSize',12);
-title('Objective 5: Within-domain prioritisation', 'FontName','Times New Roman','FontSize',12);
+title('Objective 5: Within-domain prioritisation (Based on Tier 1 & 2)', 'FontName','Times New Roman','FontSize',12);
 grid on;
-saveBoth(fig2, OUTDIR, 'Fig_obj5_Ranking_CompositePCTL');
+
+saveBoth(fig2, OUTDIR, 'Fig_obj5_2_Ranking_CompositePCTL');
 
 %% =========================
-% FIGURE 3: Redundancy Audit
+% FIGURE 3: Redundancy Audit (all criteria together)
 % =========================
 rho = corr(Zfull, 'Type','Spearman', 'Rows','pairwise');
-fig3 = figure('Color','w','Position',[160 160 860 760]);
+
+fig3 = figure('Color','w','Position',[200 200 860 760]);
 imagesc(rho); axis square; caxis([-1 1]);
 cb = colorbar; ylabel(cb, 'Spearman \rho', 'FontName','Times New Roman','FontSize',10);
+
 set(gca,'XTick',1:numel(dispFull),'XTickLabel',dispFull, ...
         'YTick',1:numel(dispFull),'YTickLabel',dispFull, ...
         'FontName','Times New Roman','FontSize',10);
 xtickangle(40);
 title(sprintf('Redundancy audit; |\\rho| threshold = %.2f', RHO_THRESHOLD), ...
       'FontName','Times New Roman','FontSize',12);
-saveBoth(fig3, OUTDIR, 'Fig_S_obj5_RedundancyAudit');
+
+saveBoth(fig3, OUTDIR, 'Fig_obj5_S1_RedundancyAudit');
 
 %% =========================
 % EXPORT EXCEL
 % =========================
 XLSX_OUT = fullfile(OUTDIR, "obj5_Prioritisation_Summary.xlsx");
 
-rawSorted = rawMed(ord, :);
-zSorted   = zMed(ord, :);
-pSorted   = P(ord, :);
-nSorted   = nPerGroup(ord);
+zSorted_T1T2 = zMed_t1t2(ord, :);
+pSorted_T1T2 = P_t1t2(ord, :);
+zSorted_T3   = zMed_t3(ord, :);
+pSorted_T3   = P_t3(ord, :);
+nSorted      = nPerGroup(ord);
+scoreZ_sorted = scoreZ(ord);
 
 Tsum = table(comboSorted, nSorted, scoreSorted, scoreZ_sorted, ...
     'VariableNames', {'Combination','n','CompositeScore_PCTL','CompositeScore_robustZ'});
 
-for j = 1:numel(CRIT_NONRED)
-    v = "Raw_" + matlab.lang.makeValidName(char(CRIT_NONRED(j)));
-    Tsum.(v) = rawSorted(:,j);
-    v = "Zmed_" + matlab.lang.makeValidName(char(CRIT_NONRED(j)));
-    Tsum.(v) = zSorted(:,j);
-    v = "Pctl_" + matlab.lang.makeValidName(char(CRIT_NONRED(j)));
-    Tsum.(v) = pSorted(:,j);
+% Add Tier 1 / Tier 2 variables to the Excel export
+for j = 1:numel(CRIT_T1T2)
+    v = "Pctl_" + matlab.lang.makeValidName(char(CRIT_T1T2(j)));
+    Tsum.(v) = pSorted_T1T2(:,j);
+end
+% Add Tier 3 variables to the Excel export
+for j = 1:numel(CRIT_T3)
+    v = "Pctl_" + matlab.lang.makeValidName(char(CRIT_T3(j)));
+    Tsum.(v) = pSorted_T3(:,j);
 end
 
 writetable(Tsum, XLSX_OUT, 'Sheet', 'Ranking_All');
-% FIX: Ensure topN does not exceed table rows
+
 topN = min(TOPN_PROFILE, height(Tsum));
 writetable(Tsum(1:topN,:), XLSX_OUT, 'Sheet', sprintf('Top_%d', topN));
+
 writeCorrMatrixToXlsx(XLSX_OUT, 'Redundancy_Rho', rho, dispFull);
 
-% Settings sheet
 Tset = table(string(CULTIVAR_CORE), string(EXTRACTION_CORE), string(scriptName), ...
     'VariableNames', {'Cultivar','Extraction','GeneratedByScript'});
 writetable(Tset, XLSX_OUT, 'Sheet', 'Settings');
@@ -323,6 +318,18 @@ fprintf('Outputs in: %s\n', OUTDIR);
 %% =========================
 % LOCAL FUNCTIONS
 % =========================
+function P = calcPercentile(zMed)
+    P = nan(size(zMed)); 
+    for j = 1:size(zMed,2)
+        v = zMed(:,j);
+        ok = ~isnan(v);
+        if sum(ok) >= 3
+            r = tiedrank_local(v(ok));
+            P(ok,j) = (r - 0.5) ./ sum(ok);
+        end
+    end
+end
+
 function name = pickVarName(T, candidates)
     vars = string(T.Properties.VariableNames);
     name = "";
@@ -366,15 +373,6 @@ function s = translateMaturity(x)
     end
 end
 
-function s = translateYesNo(x)
-    x = strtrim(lower(string(x))); s = strings(size(x));
-    for i=1:numel(x)
-        if x(i)=="si" || x(i)=="sí" || x(i)=="yes" || x(i)=="1", s(i)="Yes";
-        elseif x(i)=="no" || x(i)=="0", s(i)="No";
-        else, s(i)=titleCase(string(x(i))); end
-    end
-end
-
 function out = titleCase(str)
     words = split(str, " ");
     for k=1:numel(words)
@@ -390,14 +388,16 @@ function dispNames = prettyCritNames(varNames)
     for i=1:numel(varNames)
         v = varNames(i);
         vDisp = replace(v, ["SUM_","SUM ","_"], ["",""," "]);
+        
+        % Handle specific names
         vDisp = replace(vDisp, "GSL indolic", "Indolic glucosinolates");
         vDisp = replace(vDisp, "GSL total",   "Total glucosinolates");
-        vDisp = replace(vDisp, "Amino acids", "Amino acids");
+        vDisp = replace(vDisp, "Km 3 diglucoside 7 diglucoside", "Kaempferol 3-diglucoside-7-diglucoside");
+        vDisp = replace(vDisp, "K 3 O sinapoyldiglucoside", "Kaempferol 3-O-sinapoyl-diglucoside");
+        vDisp = replace(vDisp, "L Phenylalanine", "L-Phenylalanine");
+        
         if v == "Antihypertensive_act.", vDisp = "Antihypertensive activity";
-        elseif v == "Extraction_yield", vDisp = "Extraction yield";
         elseif v == "Total_phenolics", vDisp = "Total phenolics";
-        % --- MODIFICACIÓN: Eliminada la etiqueta "(Tier 3)" ---
-        elseif v == "Indolic_marker_index_T3", vDisp = "Indolic marker index"; 
         end
         dispNames(i) = vDisp;
     end
@@ -412,8 +412,13 @@ function writeCorrMatrixToXlsx(xlsxPath, sheetName, M, labels)
     labels = cellstr(labels(:));
     C = cell(numel(labels)+1, numel(labels)+1);
     C(1,1) = {''}; C(1,2:end) = labels'; C(2:end,1) = labels;
-    C(2:end,2:end) = num2cell(M);
+    C(2:end,2:end) = numCell(M);
     writecell(C, xlsxPath, 'Sheet', sheetName);
+end
+
+function C = numCell(M)
+    C = cell(size(M));
+    for i=1:numel(M), C{i}=M(i); end
 end
 
 function r = tiedrank_local(x)
