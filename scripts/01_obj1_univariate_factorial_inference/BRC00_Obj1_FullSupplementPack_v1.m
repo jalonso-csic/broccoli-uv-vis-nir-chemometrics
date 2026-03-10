@@ -1,40 +1,41 @@
 function BRC00_Obj1_FullSupplementPack_v1(opts)
 % BRC00_Obj1_FullSupplementPack_v1
 % ------------------------------------------------------------
-% OBJ1 – FULL PACK for Section 3.1 (Tier 1 + Tier 2 + Tier 3)
+% OBJ1 – Full package for Section 3.1 (Tier 1 + Tier 2 + Tier 3)
 % Single-root, audit-ready outputs under:
 %   <PWD>/Objetivo_1/
 %
 % Generates:
-%   (1) Tier 1–2 drivers: Fig. 1 (eta2p heatmap) + Tables (eta2p + q_BH)
-%   (2) Tier 3 supplementary pack: Full ANOVA outputs + Top-K per term + Fig. S2 (perfect heatmap top30)
+%   (1) Tier 1–2 drivers: Fig. 1 (eta2p heatmap) + tables (eta2p + q_BH)
+%   (2) Tier 3 supplementary pack: full ANOVA outputs + top-K per term
+%       + Fig. S2 (top-30 heatmap)
 %
 % IMPORTANT:
-% - MATLAB function names cannot contain '-' (hyphen). Output files DO use "Obj1-".
+% - MATLAB function names cannot contain '-' (hyphen).
+% - Output files do use "Obj1-".
 % - Figures are exported as .fig + .png (PDF optional).
 % ------------------------------------------------------------
 
 if nargin < 1, opts = struct(); end
 
 % -------------------- DEFAULTS --------------------
-opts = setDefault(opts, "xlsxPath", "Matriz_Brocoli_SUM_1nm_ASCII_v2full.xlsx");
+opts = setDefault(opts, "xlsxPath", "Matriz_Brocoli_Sin_N.xlsx");
 opts = setDefault(opts, "dataSheet", "Matriz");
 
 opts = setDefault(opts, "tier1Sheet", "Tier 1");
 opts = setDefault(opts, "tier2Sheet", "Tier 2");
-opts = setDefault(opts, "tier3Sheet", "Tier 3"); % expected 2 cols: Var1=varname, Var2=label
+opts = setDefault(opts, "tier3Sheet", "Tier 3"); % expected columns: Var1=varname, Var2=label
 
-% One single root (as requested)
 opts = setDefault(opts, "outRoot", fullfile(pwd, "Objetivo_1"));
 
-% Screening (consistent with Methods)
+% Screening settings
 opts = setDefault(opts, "minNNonMissing", 20);
 opts = setDefault(opts, "maxMissingFrac", 0.30);
 opts = setDefault(opts, "minVariance", 0); % retain if variance > minVariance
 
 % FDR policy
-% Tier1+Tier2: BH within each tier across all term-tests (endpoint × term) [matches your BRC01]
-% Tier3: BH across all term-tests in Tier3 [matches your BRC03]
+% Tier1+Tier2: BH within each tier across all term-tests (endpoint × term)
+% Tier3: BH across all term-tests in Tier3
 opts = setDefault(opts, "exportPDF", false);
 opts = setDefault(opts, "pngDPI", 300);
 
@@ -55,7 +56,7 @@ end
 % =====================================================================
 function run_Obj1_Tier12_Drivers(opts)
 
-% Output folder (single-root)
+% Output folders
 outDir = fullfile(opts.outRoot, "results", "Obj1-FactorialDrivers_Tier1_Tier2");
 figDir = fullfile(outDir, "figures");
 logDir = fullfile(outDir, "logs");
@@ -71,19 +72,14 @@ outPdf  = fullfile(figDir, "Obj1-Fig1_eta2p_heatmap_Tier1_Tier2.pdf");
 % Factor columns
 candPart = ["Parte","Part"];
 candMat  = ["Maduracion","Maduración","Maturity"];
-candN2   = ["Aplicacion_N2","Aplicación_N2","Aplicacion N2","Aplicación N2","N2"];
 
-% Type III model (all 2-way interactions)
+% Type III model (2 factors: main effects + interaction)
 modelTerms = [ ...
-    1 0 0;  % Part
-    0 1 0;  % Maturity
-    0 0 1;  % N2
-    1 1 0;  % Part*Maturity
-    1 0 1;  % Part*N2
-    0 1 1]; % Maturity*N2
+    1 0;  % Part
+    0 1;  % Maturity
+    1 1]; % Part*Maturity
 
-N2u = "N" + char(8322);
-termNames = ["Part","Maturity",N2u,"Part×Maturity","Part×"+N2u,"Maturity×"+N2u];
+termNames = ["Part","Maturity","Part×Maturity"];
 nTerms = numel(termNames);
 
 % -------------------- LOAD DATA --------------------
@@ -93,15 +89,12 @@ N = height(T);
 
 colPart = pickFirstExisting(vnames, candPart);
 colMat  = pickFirstExisting(vnames, candMat);
-colN2   = pickFirstExisting(vnames, candN2);
 
 assert(colPart~="", "Part factor column not found.");
 assert(colMat~="",  "Maturity factor column not found.");
-assert(colN2~="",   "N2 factor column not found.");
 
 Part = categorical(string(T.(colPart)));
 Mat  = categorical(string(T.(colMat)));
-N2   = categorical(string(T.(colN2)));
 
 % -------------------- LOAD TIER 1 LIST --------------------
 T1 = readtable(opts.xlsxPath, "Sheet", opts.tier1Sheet, "ReadVariableNames", false, "VariableNamingRule","preserve");
@@ -114,7 +107,7 @@ tier1_labels_raw = tier1_labels_raw(ok);
 tier1_vars   = string(matlab.lang.makeValidName(tier1_vars_raw));
 tier1_labels = tier1_labels_raw;
 
-% Exclude Extraction_yield explicitly (per your v6 note)
+% Explicitly exclude Extraction_yield
 rm = (tier1_vars == "Extraction_yield");
 tier1_vars(rm)   = [];
 tier1_labels(rm) = [];
@@ -126,7 +119,7 @@ end
 
 % -------------------- LOAD TIER 2 LIST --------------------
 T2 = readtable(opts.xlsxPath, "Sheet", opts.tier2Sheet, "ReadVariableNames", false, "VariableNamingRule","preserve");
-tier2_vars_raw   = string(T2.Var2); % SUM_* varnames
+tier2_vars_raw   = string(T2.Var2); % SUM_* variable names
 tier2_labels_raw = string(T2.Var4); % English label
 ok = strlength(tier2_vars_raw)>0;
 tier2_vars_raw   = tier2_vars_raw(ok);
@@ -153,7 +146,7 @@ C = [ ...
 writetable(C(C.Tier=="Tier1",:), outXlsx, "Sheet", "Tier1_candidates");
 writetable(C(C.Tier=="Tier2",:), outXlsx, "Sheet", "Tier2_candidates");
 
-% paper-friendly order (only for Tier1+Tier2)
+% Paper-friendly order for Tier 1 + Tier 2
 R = applyPaperFriendlyOrder_T12(R);
 writetable(R, outXlsx, "Sheet", "Retained_endpoints");
 
@@ -172,14 +165,13 @@ for i = 1:height(R)
     y = y0(oky);
     P1 = Part(oky);
     M1 = Mat(oky);
-    N21 = N2(oky);
 
     if numel(y) < opts.minNNonMissing, continue; end
 
-    [p, tbl] = anovan(y, {P1, M1, N21}, ...
+    [p, tbl] = anovan(y, {P1, M1}, ...
         "model", modelTerms, ...
         "sstype", 3, ...
-        "varnames", {'Part','Maturity','N2'}, ...
+        "varnames", {'Part','Maturity'}, ...
         "display","off");
 
     SS = cell2mat(tbl(2:end-1, 2)); % terms + Error
@@ -221,11 +213,11 @@ for tierName = ["Tier1","Tier2"]
     idx = (R.Tier == tierName);
     p_vec = pMat(idx,:);
     p_vec = p_vec(:);
-    q_vec = bh_fdr_validtests(p_vec);   % FIXED (valid tests only)
+    q_vec = bh_fdr_validtests(p_vec);   % valid tests only
     qMat(idx,:) = reshape(q_vec, sum(idx), nTerms);
 end
 
-% -------------------- EXPORT WIDE MATRICES (TABLE S1/S2 backbone) --------------------
+% -------------------- EXPORT WIDE MATRICES (TABLE S1/S2 BACKBONE) --------------------
 rowNamesWide = strcat(string(R.Tier), " | ", string(R.Label));
 
 EtaWide = array2table(etaMat, 'VariableNames', cellstr(termNames));
@@ -257,7 +249,7 @@ xtickangle(30);
 colorbar;
 title('Obj1 – Type III ANOVA partial eta-squared (ηp²)');
 
-% separators (same as your v6)
+% Visual separators
 hold on;
 sep = [4, 7, 11, 17];
 for s = sep
@@ -281,11 +273,11 @@ fprintf("[Obj1 Tier1-2] DONE. Excel: %s | Fig: %s\n", outXlsx, outPng);
 end
 
 % =====================================================================
-% (B) OBJ1 – Tier 3 supplementary pack (your "perfect" heatmap logic)
+% (B) OBJ1 – Tier 3 supplementary pack
 % =====================================================================
 function run_Obj1_Tier3_SupplementaryPack(opts)
 
-% Output folder (single-root)
+% Output folders
 outDir = fullfile(opts.outRoot, "results", "Obj1-Tier3_SupplementaryPack");
 figDir = fullfile(outDir, "figures");
 logDir = fullfile(outDir, "logs");
@@ -295,7 +287,6 @@ if ~exist(logDir,"dir"), mkdir(logDir); end
 
 outXlsx = fullfile(outDir, "Obj1-Tier3_SupplementaryPack.xlsx");
 
-% Rename to Fig S2 explicitly (since this is the one reviewers complain about)
 outFig  = fullfile(figDir, "Obj1-FigS2_Tier3_eta2p_heatmap_top30.fig");
 outPng  = fullfile(figDir, "Obj1-FigS2_Tier3_eta2p_heatmap_top30.png");
 outPdf  = fullfile(figDir, "Obj1-FigS2_Tier3_eta2p_heatmap_top30.pdf");
@@ -303,23 +294,18 @@ outPdf  = fullfile(figDir, "Obj1-FigS2_Tier3_eta2p_heatmap_top30.pdf");
 % Factor columns
 candPart = ["Parte","Part"];
 candMat  = ["Maduracion","Maduración","Maturity"];
-candN2   = ["Aplicacion_N2","Aplicación_N2","Aplicacion N2","Aplicación N2","N2"];
 
-% Type III model (all 2-way interactions)
+% Type III model (2 factors: main effects + interaction)
 modelTerms = [ ...
-    1 0 0;  % Part
-    0 1 0;  % Maturity
-    0 0 1;  % N2
-    1 1 0;  % Part*Maturity
-    1 0 1;  % Part*N2
-    0 1 1]; % Maturity*N2
+    1 0;  % Part
+    0 1;  % Maturity
+    1 1]; % Part*Maturity
 
-N2u = "N" + char(8322);
-termNames = ["Part","Maturity",N2u,"Part×Maturity","Part×"+N2u,"Maturity×"+N2u];
+termNames = ["Part","Maturity","Part×Maturity"];
 nTerms = numel(termNames);
 
-TOPK_PER_TERM = opts.tier3TopKPerTerm;  % Table S3-like
-TOPN_HEATMAP  = opts.tier3TopNHeatmap;  % Fig S2-like
+TOPK_PER_TERM = opts.tier3TopKPerTerm;  
+TOPN_HEATMAP  = opts.tier3TopNHeatmap;  
 
 % -------------------- LOAD DATA --------------------
 T = readtable(opts.xlsxPath, "Sheet", opts.dataSheet, "VariableNamingRule","modify");
@@ -328,17 +314,15 @@ N = height(T);
 
 colPart = pickFirstExisting(vnames, candPart);
 colMat  = pickFirstExisting(vnames, candMat);
-colN2   = pickFirstExisting(vnames, candN2);
 
 assert(colPart~="", "Part factor column not found.");
 assert(colMat~="",  "Maturity factor column not found.");
-assert(colN2~="",   "N2 factor column not found.");
 
 Part = categorical(string(T.(colPart)));
 Mat  = categorical(string(T.(colMat)));
-N2   = categorical(string(T.(colN2)));
 
-% -------------------- LOAD TIER 3 LIST (EXPECTED: Var1=varname, Var2=label) --------------------
+% -------------------- LOAD TIER 3 LIST --------------------
+% Expected columns: Var1=varname, Var2=label
 T3 = readtable(opts.xlsxPath, "Sheet", opts.tier3Sheet, "ReadVariableNames", false, "VariableNamingRule","preserve");
 tier3_vars_raw   = string(T3.Var1);
 tier3_labels_raw = string(T3.Var2);
@@ -355,7 +339,7 @@ if ~isempty(missing3)
     error("Tier 3 variables missing in data sheet: %s", strjoin(missing3, ", "));
 end
 
-% Family inference (labeling aid only)
+% Family inference used as a labeling aid
 family_auto = inferFamily(tier3_labels, tier3_vars);
 
 Dict = table(tier3_vars(:), tier3_labels(:), family_auto(:), ...
@@ -385,14 +369,13 @@ for i = 1:height(R)
     y = y0(oky);
     P1 = Part(oky);
     M1 = Mat(oky);
-    N21 = N2(oky);
 
     if numel(y) < opts.minNNonMissing, continue; end
 
-    [p, tbl] = anovan(y, {P1, M1, N21}, ...
+    [p, tbl] = anovan(y, {P1, M1}, ...
         "model", modelTerms, ...
         "sstype", 3, ...
-        "varnames", {'Part','Maturity','N2'}, ...
+        "varnames", {'Part','Maturity'}, ...
         "display","off");
 
     SS = cell2mat(tbl(2:end-1, 2)); % terms + Error
@@ -427,9 +410,9 @@ end
 
 writetable(Tidy, outXlsx, "Sheet", "ANOVA_Tidy");
 
-% -------------------- BH–FDR ACROSS ALL TERM TESTS IN TIER 3 (FIXED) --------------------
+% -------------------- BH–FDR ACROSS ALL TERM TESTS IN TIER 3 --------------------
 p_vec = pMat(:);
-q_vec = bh_fdr_validtests(p_vec);        % FIXED
+q_vec = bh_fdr_validtests(p_vec);        % valid tests only
 qMat  = reshape(q_vec, size(pMat));
 
 % -------------------- WIDE MATRICES --------------------
@@ -472,7 +455,7 @@ end
 TopByTerm = sortrows(TopByTerm, {'Term','eta2p'}, {'ascend','descend'});
 writetable(TopByTerm, outXlsx, "Sheet", "S3_Top10_byTerm");
 
-% -------------------- FIG S2: HEATMAP TOP-N BY max(eta2p) (YOUR PERFECT STYLE) --------------------
+% -------------------- FIG S2: HEATMAP TOP-N BY max(eta2p) --------------------
 maxEta = max(etaMat, [], 2, "omitnan");
 [~, idxMax] = sort(maxEta, "descend");
 idxMax = idxMax(isfinite(maxEta(idxMax)));
@@ -480,12 +463,12 @@ idxMax = idxMax(isfinite(maxEta(idxMax)));
 nH = min(TOPN_HEATMAP, numel(idxMax));
 selH = idxMax(1:nH);
 
-% order by family then maxEta (legibility)
+% Order by family, then by maxEta for readability
 tmpOrder = table(string(R.Family_auto(selH)), maxEta(selH), 'VariableNames', {'Family','MaxEta'});
 [~, ord] = sortrows(tmpOrder, {'Family','MaxEta'}, {'ascend','descend'});
 selH = selH(ord);
 
-% abbreviations (keep your special rules)
+% Abbreviations
 labelsH_raw = string(R.Label(selH));
 labelsH = strings(size(labelsH_raw));
 for i = 1:numel(labelsH_raw)
@@ -507,7 +490,7 @@ xtickangle(30);
 colorbar;
 title(sprintf('Obj1 – Type III ANOVA ηp² (Top %d metabolites)', nH));
 
-% family separators
+% Family separators
 fam = string(R.Family_auto(selH));
 hold on;
 for i = 2:numel(fam)
@@ -569,7 +552,6 @@ R = C(C.retain,:);
 end
 
 function R = applyPaperFriendlyOrder_T12(R)
-% Same order you hard-coded in v6 (functional -> primary -> GSL -> phenolics -> lipids)
 desiredVars = string([ ...
     "Antihypertensive_act_", "ABTS", "DPPH", "Total_phenolics", ...
     "SUM_Amino_acids", "SUM_N_related", "SUM_OrgAcids", ...
@@ -603,7 +585,6 @@ plotLabels = arrayfun(@capFirstChar, plotLabels);
 end
 
 function q = bh_fdr_validtests(p)
-% BH–FDR using ONLY valid (finite) p-values (fixes m inflation).
 p = p(:);
 q = nan(size(p));
 
@@ -667,7 +648,6 @@ fclose(fid);
 end
 
 function abbr = getAbbreviation(full_name)
-% Keep your explicit replacements; otherwise return original label.
 n = lower(strtrim(string(full_name)));
 abbr = string(full_name);
 
@@ -680,7 +660,6 @@ end
 end
 
 function fam = inferFamily(labels, vars)
-% Conservative keyword heuristic for ordering/legibility ONLY.
 labels = lower(string(labels));
 vars   = lower(string(vars)); %#ok<NASGU>
 
