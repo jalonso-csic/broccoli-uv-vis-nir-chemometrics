@@ -1,7 +1,7 @@
 function BRC_obj2_Section32_SpectralStructure_run_v1()
 % BRC_obj2_Section32_SpectralStructure_run_v1
 % -------------------------------------------------------------------------
-% Objective 2 — Section 3.2 reanalysis (audit-ready)
+% Objective 2 — Section 3.2 reanalysis (audit-ready) - TWO FACTORS ONLY
 % Outputs (all under ./Objetivo_2):
 %   Tables/obj2_section32_outputs.xlsx
 %   Figures/*.fig + *.png  (main)
@@ -9,14 +9,12 @@ function BRC_obj2_Section32_SpectralStructure_run_v1()
 %   Code/BRC_obj2_Section32_SpectralStructure_run_v1.m (self-archived)
 %   obj2_section32_log.txt
 % -------------------------------------------------------------------------
-
 %% =========================
 % USER SETTINGS
 %% =========================
 TARGET_SCRIPT_NAME = 'BRC_obj2_Section32_SpectralStructure_run_v1.m';
 OUTROOT            = fullfile(pwd, 'Objetivo_2');
-
-INPUT_XLSX = 'Matriz_Brocoli_SUM_1nm_ASCII.xlsx';
+INPUT_XLSX = 'Matriz_Brocoli_Sin_N.xlsx';
 SHEET_NAME = '';  % '' = auto (first sheet)
 
 % Optional manifest (Sample_ID) — will only be used if Sample_ID exists in matrix
@@ -52,6 +50,7 @@ DIR_CODE  = fullfile(OUTROOT,'Code');
 DIR_TABLE = fullfile(OUTROOT,'Tables');
 DIR_FIGS  = fullfile(OUTROOT,'Figures');
 DIR_SUPP  = fullfile(OUTROOT,'Supplementary');
+
 if ~exist(DIR_CODE,'dir');  mkdir(DIR_CODE);  end
 if ~exist(DIR_TABLE,'dir'); mkdir(DIR_TABLE); end
 if ~exist(DIR_FIGS,'dir');  mkdir(DIR_FIGS);  end
@@ -63,7 +62,7 @@ LOGFILE = fullfile(OUTROOT,'obj2_section32_log.txt');
 if exist(LOGFILE,'file'); delete(LOGFILE); end
 diary(LOGFILE);
 
-fprintf('=== Objective 2 / Section 3.2 reanalysis ===\n');
+fprintf('=== Objective 2 / Section 3.2 reanalysis (Two Factors) ===\n');
 fprintf('Input: %s\n', INPUT_XLSX);
 fprintf('Output root: %s\n', OUTROOT);
 fprintf('Seed: %d | nPerm: %d\n', SEED0, N_PERM);
@@ -74,22 +73,20 @@ fprintf('SG poly: %d | SG window: %d\n\n', SG_POLY_ORDER, SG_FRAME_LEN);
 %% =========================
 T = readtable_safely(INPUT_XLSX, SHEET_NAME);
 
-% Detect factor columns robustly
+% Robust factor-column detection
 colPart = pickVarName(T, {'parte','part'});
 colMat  = pickVarName(T, {'madur','matur'});
-colN2   = pickVarName(T, {'aplicacion_n2','aplicacionn2','n2','nitro','riego','water','regimen'});
 
 assert(~isempty(colPart), 'Could not detect Part/Parte column.');
 assert(~isempty(colMat),  'Could not detect Maturity/Maduracion column.');
-assert(~isempty(colN2),   'Could not detect N2 / Water regime column.');
 
-% Sample_ID STRICT detection ONLY (prevents L_Histidine false positive)
+% Strict Sample_ID detection only
 colSample = pickVarName_strict(T, {'Sample_ID','SampleID','sample_id','sampleid'});
 
 fprintf('Detected columns:\n');
 fprintf('  Part     : %s\n', colPart);
 fprintf('  Maturity : %s\n', colMat);
-fprintf('  N2       : %s\n', colN2);
+
 if ~isempty(colSample)
     fprintf('  SampleID : %s\n\n', colSample);
 else
@@ -121,14 +118,14 @@ end
 assert(height(T) >= 10, 'Too few rows after filtering.');
 
 %% =========================
-% EXTRACT SPECTRA nm_*
+% EXTRACT SPECTRA nm_* & TRANSLATE FACTORS
 %% =========================
 [wl, Xraw, specNames] = extractSpectra_nm(T); %#ok<ASGLU>
 dx = checkUniformGrid(wl);
 
-Part = categorical(string(T.(colPart))); Part = removecats(Part);
-Mat  = categorical(string(T.(colMat)));  Mat  = removecats(Mat);
-N2   = categorical(string(T.(colN2)));   N2   = removecats(N2);
+% Translate to English immediately so legends and tables are automatic
+Part = categorical(englishPartLabels(T.(colPart))); Part = removecats(Part);
+Mat  = categorical(englishMatLabels(T.(colMat)));   Mat  = removecats(Mat);
 
 fprintf('n = %d | p = %d | dx = %.6g nm\n\n', size(Xraw,1), size(Xraw,2), dx);
 
@@ -155,7 +152,7 @@ xlabel('Wavelength (nm)','FontName',FONT_NAME,'FontSize',FS_LAB);
 ylabel('SNV-normalised spectra (a.u.)','FontName',FONT_NAME,'FontSize',FS_LAB);
 title('(A) SNV','FontName',FONT_NAME,'FontSize',FS_LAB);
 set(gca,'FontName',FONT_NAME,'FontSize',FS_AX,'Color','w'); grid on;
-legend(englishPartLabels(categories(Part)),'Location','best','Box','off');
+legend(categories(Part),'Location','best','Box','off');
 
 nexttile; hold on;
 plotMeanByGroup(wl, X_sg1, Part, 1.4);
@@ -163,16 +160,17 @@ xlabel('Wavelength (nm)','FontName',FONT_NAME,'FontSize',FS_LAB);
 ylabel('SNV + SG 1st derivative (a.u.)','FontName',FONT_NAME,'FontSize',FS_LAB);
 title('(B) SNV + SG 1st derivative','FontName',FONT_NAME,'FontSize',FS_LAB);
 set(gca,'FontName',FONT_NAME,'FontSize',FS_AX,'Color','w'); grid on;
-legend(englishPartLabels(categories(Part)),'Location','best','Box','off');
+legend(categories(Part),'Location','best','Box','off');
 
 title(tlo,'Mean spectra by plant part','FontName',FONT_NAME,'FontSize',FS_LAB);
+
 robustSaveFig(fig, fullfile(DIR_FIGS,'Fig2_MeanSpectra_Part_SNV_vs_SG1'));
 
 %% =========================
 % FIG 3 (main): PCA by Part (SNV vs SG2)
 %% =========================
-% p >> n so rank <= n-1; suppress rank-deficiency warning (expected)
 ws = warning('off','stats:pca:ColRankDefX');
+
 rng(SEED0,'twister');
 nComp = min([N_PCS_EXPORT, size(X_snv_z,1)-1, size(X_snv_z,2)]);
 [~, score_snv, ~, ~, expl_snv] = pca(X_snv_z,'Centered',false,'Algorithm','svd','NumComponents',nComp);
@@ -191,7 +189,7 @@ xlabel(sprintf('PC1 (%.1f%%)', expl_snv(1)),'FontName',FONT_NAME,'FontSize',FS_L
 ylabel(sprintf('PC2 (%.1f%%)', expl_snv(2)),'FontName',FONT_NAME,'FontSize',FS_LAB);
 title('(A) PCA scores (SNV)','FontName',FONT_NAME,'FontSize',FS_LAB);
 set(gca,'FontName',FONT_NAME,'FontSize',FS_AX,'Color','w'); grid on;
-legend(englishPartLabels(categories(Part)),'Location','best','Box','off');
+legend('Location','best','Box','off');
 
 nexttile;
 gscatter(score_sg2(:,1), score_sg2(:,2), Part);
@@ -199,41 +197,33 @@ xlabel(sprintf('PC1 (%.1f%%)', expl_sg2(1)),'FontName',FONT_NAME,'FontSize',FS_L
 ylabel(sprintf('PC2 (%.1f%%)', expl_sg2(2)),'FontName',FONT_NAME,'FontSize',FS_LAB);
 title('(B) PCA scores (SNV + SG 2nd derivative)','FontName',FONT_NAME,'FontSize',FS_LAB);
 set(gca,'FontName',FONT_NAME,'FontSize',FS_AX,'Color','w'); grid on;
-legend(englishPartLabels(categories(Part)),'Location','best','Box','off');
+legend('Location','best','Box','off');
 
 title(tlo,'PCA score space by plant part','FontName',FONT_NAME,'FontSize',FS_LAB);
+
 robustSaveFig(fig, fullfile(DIR_FIGS,'Fig3_PCA_Part_SNV_vs_SG2'));
 
 %% =========================
-% SUPP FIG S1: mean spectra by Maturity and N2 (SNV)
+% SUPP FIG S2: mean spectra by Maturity (SNV)
 %% =========================
-fig = figure('Color','w','Units','pixels','Position',[80 80 1200 520], 'InvertHardcopy','on');
-tlo = tiledlayout(fig,1,2,'TileSpacing','compact','Padding','compact');
+fig = figure('Color','w','Units','pixels','Position',[80 80 600 520], 'InvertHardcopy','on');
 
-nexttile; hold on;
+hold on;
 plotMeanByGroup(wl, X_snv, Mat, 1.3);
 xlabel('Wavelength (nm)','FontName',FONT_NAME,'FontSize',FS_LAB);
 ylabel('SNV-normalised spectra (a.u.)','FontName',FONT_NAME,'FontSize',FS_LAB);
-title('Maturity (SNV)','FontName',FONT_NAME,'FontSize',FS_LAB);
+title('Mean spectra by Maturity (SNV)','FontName',FONT_NAME,'FontSize',FS_LAB);
 set(gca,'FontName',FONT_NAME,'FontSize',FS_AX,'Color','w'); grid on;
 legend(categories(Mat),'Location','best','Box','off');
 
-nexttile; hold on;
-plotMeanByGroup(wl, X_snv, N2, 1.3);
-xlabel('Wavelength (nm)','FontName',FONT_NAME,'FontSize',FS_LAB);
-ylabel('SNV-normalised spectra (a.u.)','FontName',FONT_NAME,'FontSize',FS_LAB);
-title('N2 (SNV)','FontName',FONT_NAME,'FontSize',FS_LAB);
-set(gca,'FontName',FONT_NAME,'FontSize',FS_AX,'Color','w'); grid on;
-legend(categories(N2),'Location','best','Box','off');
-
-title(tlo,'Mean spectra by design factors (supplementary)','FontName',FONT_NAME,'FontSize',FS_LAB);
-robustSaveFig(fig, fullfile(DIR_SUPP,'FigS1_MeanSpectra_Maturity_N2_SNV'));
+% Figure numbering updated from FigS1 to FigS2
+robustSaveFig(fig, fullfile(DIR_SUPP,'FigS2_MeanSpectra_Maturity_SNV'));
 
 %% =========================
-% SUPP FIG S2: PCA by Maturity and N2 (SNV vs SG2)
+% SUPP FIG S3: PCA by Maturity (SNV vs SG2)
 %% =========================
-fig = figure('Color','w','Units','pixels','Position',[80 80 1200 900], 'InvertHardcopy','on');
-tlo = tiledlayout(fig,2,2,'TileSpacing','compact','Padding','compact');
+fig = figure('Color','w','Units','pixels','Position',[80 80 1200 450], 'InvertHardcopy','on');
+tlo = tiledlayout(fig,1,2,'TileSpacing','compact','Padding','compact');
 
 nexttile;
 gscatter(score_snv(:,1), score_snv(:,2), Mat);
@@ -251,24 +241,10 @@ title('Maturity — SNV + SG2','FontName',FONT_NAME,'FontSize',FS_LAB);
 set(gca,'FontName',FONT_NAME,'FontSize',FS_AX,'Color','w'); grid on;
 legend('Location','best','Box','off');
 
-nexttile;
-gscatter(score_snv(:,1), score_snv(:,2), N2);
-xlabel(sprintf('PC1 (%.1f%%)', expl_snv(1)),'FontName',FONT_NAME,'FontSize',FS_LAB);
-ylabel(sprintf('PC2 (%.1f%%)', expl_snv(2)),'FontName',FONT_NAME,'FontSize',FS_LAB);
-title('N2 — SNV','FontName',FONT_NAME,'FontSize',FS_LAB);
-set(gca,'FontName',FONT_NAME,'FontSize',FS_AX,'Color','w'); grid on;
-legend('Location','best','Box','off');
+title(tlo,'PCA score space by Maturity (supplementary)','FontName',FONT_NAME,'FontSize',FS_LAB);
 
-nexttile;
-gscatter(score_sg2(:,1), score_sg2(:,2), N2);
-xlabel(sprintf('PC1 (%.1f%%)', expl_sg2(1)),'FontName',FONT_NAME,'FontSize',FS_LAB);
-ylabel(sprintf('PC2 (%.1f%%)', expl_sg2(2)),'FontName',FONT_NAME,'FontSize',FS_LAB);
-title('N2 — SNV + SG2','FontName',FONT_NAME,'FontSize',FS_LAB);
-set(gca,'FontName',FONT_NAME,'FontSize',FS_AX,'Color','w'); grid on;
-legend('Location','best','Box','off');
-
-title(tlo,'PCA score space by design factors (supplementary)','FontName',FONT_NAME,'FontSize',FS_LAB);
-robustSaveFig(fig, fullfile(DIR_SUPP,'FigS2_PCA_Maturity_N2_SNV_vs_SG2'));
+% Figure numbering updated from FigS2 to FigS3
+robustSaveFig(fig, fullfile(DIR_SUPP,'FigS3_PCA_Maturity_SNV_vs_SG2'));
 
 %% =========================
 % TABLES: PCA explained variance
@@ -282,11 +258,11 @@ tblPCA_SG2 = makePCAexplainedTable(expl_sg2, N_PCS_EXPORT, 'SNV_SG2');
 terms = defineTerms();
 
 rng(SEED0,'twister');
-res_SNV = runFreedmanLaneMANOVA_fast(X_snv_z, Part, Mat, N2, terms, N_PERM);
+res_SNV = runFreedmanLaneMANOVA_fast(X_snv_z, Part, Mat, terms, N_PERM);
 res_SNV.q_BH = bh_fdr(res_SNV.p_perm);
 
 rng(SEED0,'twister');
-res_SG2 = runFreedmanLaneMANOVA_fast(X_sg2_z, Part, Mat, N2, terms, N_PERM);
+res_SG2 = runFreedmanLaneMANOVA_fast(X_sg2_z, Part, Mat, terms, N_PERM);
 res_SG2.q_BH = bh_fdr(res_SG2.p_perm);
 
 %% =========================
@@ -301,17 +277,14 @@ meta.Item  = {'InputFile';'Sheet';'nRows';'nSpectralVars';'WavelengthMin_nm';'Wa
 meta.Value = {INPUT_XLSX; SHEET_NAME; num2str(size(Xraw,1)); num2str(size(Xraw,2)); ...
               num2str(min(wl)); num2str(max(wl)); num2str(dx); num2str(N_PERM); num2str(SEED0); ...
               num2str(SG_POLY_ORDER); num2str(SG_FRAME_LEN); logicalToText(manifestUsed); ANALYSISSET_CSV; TARGET_SCRIPT_NAME};
+
 writetable(meta, OUTXLSX, 'Sheet','Meta');
-
-writetable(designLevelCounts(Part, Mat, N2), OUTXLSX, 'Sheet','DesignLevels');
-
+writetable(designLevelCounts(Part, Mat), OUTXLSX, 'Sheet','DesignLevels');
 writetable(makeMeanSDtable(wl, X_snv), OUTXLSX, 'Sheet','MeanSD_SNV');
 writetable(makeMeanSDtable(wl, X_sg1), OUTXLSX, 'Sheet','MeanSD_SNV_SG1');
-
 writetable(makeMeanByGroupTable(wl, X_snv, Part, 'Part'), OUTXLSX, 'Sheet','MeanByPart_SNV');
 writetable(makeMeanByGroupTable(wl, X_sg1, Part, 'Part'), OUTXLSX, 'Sheet','MeanByPart_SNV_SG1');
 writetable(makeMeanByGroupTable(wl, X_snv, Mat,  'Maturity'), OUTXLSX, 'Sheet','MeanByMaturity_SNV');
-writetable(makeMeanByGroupTable(wl, X_snv, N2,   'N2'), OUTXLSX, 'Sheet','MeanByN2_SNV');
 
 writetable(tblPCA_SNV, OUTXLSX, 'Sheet','PCA_Explained_SNV');
 writetable(tblPCA_SG2, OUTXLSX, 'Sheet','PCA_Explained_SNV_SG2');
@@ -320,12 +293,12 @@ writetable(res_SNV, OUTXLSX, 'Sheet','Table4_SNV');
 writetable(res_SG2, OUTXLSX, 'Sheet','Table5_SNV_SG2');
 
 fprintf('\nDONE.\nExcel: %s\nMain figs: %s\nSupp figs: %s\nLog: %s\n', OUTXLSX, DIR_FIGS, DIR_SUPP, LOGFILE);
-
 diary off;
+
 end % end main function
 
 %% ========================================================================
-% LOCAL FUNCTIONS (ALL CLOSED WITH 'end')
+% LOCAL FUNCTIONS
 %% ========================================================================
 
 function forceLightTheme()
@@ -386,7 +359,6 @@ end
 function name = pickVarName(T, candidates)
     vars = string(T.Properties.VariableNames);
     name = '';
-    % exact match first
     for i=1:numel(candidates)
         c = lower(string(candidates{i}));
         idx = find(strcmpi(vars, c), 1);
@@ -395,7 +367,6 @@ function name = pickVarName(T, candidates)
             return;
         end
     end
-    % contains match
     lvars = lower(vars);
     for i=1:numel(candidates)
         c = lower(string(candidates{i}));
@@ -408,7 +379,6 @@ function name = pickVarName(T, candidates)
 end
 
 function name = pickVarName_strict(T, candidates)
-    % STRICT: exact matches only (prevents 'L_Histidine' etc)
     vars = string(T.Properties.VariableNames);
     name = '';
     for i=1:numel(candidates)
@@ -432,9 +402,9 @@ function [wl, Xraw, specNames] = extractSpectra_nm(T)
         assert(~isempty(tok), 'Bad spectral column name: %s', specNames(i));
         wl(i) = str2double(tok{1});
     end
+
     [wl, ord] = sort(wl, 'ascend');
     specNames = specNames(ord);
-
     Xraw = double(table2array(T(:, specNames)));
 end
 
@@ -469,7 +439,6 @@ function Xd = sg_derivative_rows(X, polyOrder, frameLen, derivOrder, dx)
     end
     [~, G] = sgolay(polyOrder, frameLen);
     h = factorial(derivOrder) / (dx^derivOrder) * G(:, derivOrder+1);
-
     half = (frameLen-1)/2;
     Xd = zeros(size(X));
     for i = 1:size(X,1)
@@ -506,10 +475,31 @@ function labels = englishPartLabels(labelsIn)
     labels = cellstr(labels);
 end
 
+% Translation helper for Maturity labels
+function labels = englishMatLabels(labelsIn)
+    labels = string(labelsIn);
+    for i=1:numel(labels)
+        s = lower(strtrim(labels(i)));
+        if contains(s, "inmadur") || contains(s, "immature")
+            labels(i) = "Immature";
+        elseif contains(s, "comercial") || contains(s, "commercial") || contains(s, "óptimo") || contains(s, "optimo")
+            labels(i) = "Commercial";
+        elseif contains(s, "sobre") || contains(s, "over") || contains(s, "senescent")
+            labels(i) = "Overmature";
+        else
+            % Fallback: capitalise the first letter for unrecognised labels
+            c = char(labels(i));
+            if ~isempty(c)
+                c(1) = upper(c(1));
+                labels(i) = string(c);
+            end
+        end
+    end
+    labels = cellstr(labels);
+end
+
 function robustSaveFig(fig, basePathNoExt)
     drawnow;
-
-    % Try to hide axes toolbars (MATLAB versions differ)
     ax = findall(fig,'Type','axes');
     for i=1:numel(ax)
         try
@@ -530,7 +520,6 @@ function robustSaveFig(fig, basePathNoExt)
     catch
     end
 
-    % Save .fig
     try
         savefig(fig, [basePathNoExt '.fig']);
     catch
@@ -541,7 +530,6 @@ function robustSaveFig(fig, basePathNoExt)
         end
     end
 
-    % Save PNG (robust white background)
     try
         print(fig, [basePathNoExt '.png'], '-dpng', '-r400');
     catch
@@ -554,26 +542,17 @@ function terms = defineTerms()
     terms = struct();
     terms(1).name = 'Part';
     terms(2).name = 'Maturity';
-    terms(3).name = 'N2';
-    terms(4).name = 'Part×Maturity';
-    terms(5).name = 'Part×N2';
-    terms(6).name = 'Maturity×N2';
+    terms(3).name = 'Part×Maturity';
 end
 
-function Z = buildDesign(Part, Mat, N2, include)
+function Z = buildDesign(Part, Mat, include)
     Z = ones(numel(Part),1);
-
     Dp = dummyvar(Part); Dp = Dp(:,2:end);
     Dm = dummyvar(Mat);  Dm = Dm(:,2:end);
-    Dn = dummyvar(N2);   Dn = Dn(:,2:end);
-
-    if include.includePart; Z = [Z, Dp]; end %#ok<AGROW>
-    if include.includeMat;  Z = [Z, Dm]; end %#ok<AGROW>
-    if include.includeN2;   Z = [Z, Dn]; end %#ok<AGROW>
-
-    if include.includePM; Z = [Z, interactionDummy(Dp, Dm)]; end %#ok<AGROW>
-    if include.includePN; Z = [Z, interactionDummy(Dp, Dn)]; end %#ok<AGROW>
-    if include.includeMN; Z = [Z, interactionDummy(Dm, Dn)]; end %#ok<AGROW>
+    
+    if include.includePart; Z = [Z, Dp]; end 
+    if include.includeMat;  Z = [Z, Dm]; end 
+    if include.includePM; Z = [Z, interactionDummy(Dp, Dm)]; end 
 end
 
 function Dint = interactionDummy(D1, D2)
@@ -589,47 +568,38 @@ function Dint = interactionDummy(D1, D2)
     end
 end
 
-function resTbl = runFreedmanLaneMANOVA_fast(X, Part, Mat, N2, terms, nPerm)
+function resTbl = runFreedmanLaneMANOVA_fast(X, Part, Mat, terms, nPerm)
     n = size(X,1);
+    incFull = struct('includePart',true,'includeMat',true,'includePM',true);
+    Zfull = buildDesign(Part, Mat, incFull);
 
-    incFull = struct('includePart',true,'includeMat',true,'includeN2',true, ...
-                     'includePM',true,'includePN',true,'includeMN',true);
-
-    Zfull = buildDesign(Part, Mat, N2, incFull);
     [Qf, ~] = qr(Zfull, 0);
     Pf = Qf*Qf';
     dfFull = rank(Zfull);
     dfErr  = n - dfFull;
-
     XhatFull = Pf * X;
     Efull    = X - XhatFull;
     SSEfull  = sum(Efull.^2, 'all');
     SST      = sum(X.^2, 'all');
 
-    % Preallocate with old-style types (avoids table growth warnings)
     resTbl = table('Size',[numel(terms) 10], ...
         'VariableTypes', {'cell','double','double','double','double','double','double','double','double','double'}, ...
         'VariableNames', {'Term','df_term','df_error','SS_term','SS_error','F','p_perm','R2','eta2p','nPerm'});
 
     for t=1:numel(terms)
         termName = terms(t).name;
-
         incRed = incFull;
         switch termName
             case 'Part';            incRed.includePart = false;
             case 'Maturity';        incRed.includeMat  = false;
-            case 'N2';              incRed.includeN2   = false;
             case 'Part×Maturity';   incRed.includePM   = false;
-            case 'Part×N2';         incRed.includePN   = false;
-            case 'Maturity×N2';     incRed.includeMN   = false;
             otherwise
                 error('Unknown term: %s', termName);
         end
 
-        Zred = buildDesign(Part, Mat, N2, incRed);
+        Zred = buildDesign(Part, Mat, incRed);
         [Qr, ~] = qr(Zred, 0);
         Pr = Qr*Qr';
-
         dfRed  = rank(Zred);
         dfTerm = dfFull - dfRed;
 
@@ -645,8 +615,10 @@ function resTbl = runFreedmanLaneMANOVA_fast(X, Part, Mat, N2, terms, nPerm)
             Xb  = XhatRed + Ered0(idx,:);
             XhatFull_b = Pf * Xb;
             SSEfull_b  = sum((Xb - XhatFull_b).^2, 'all');
+            
             XhatRed_b  = Pr * Xb;
             SSterm_b   = sum((XhatFull_b - XhatRed_b).^2, 'all');
+
             Fperm(b) = (SSterm_b/dfTerm) / (SSEfull_b/dfErr);
         end
 
@@ -673,7 +645,6 @@ function q = bh_fdr(p)
     q = NaN(size(p));
     ok = ~isnan(p);
     p0 = p(ok);
-
     [ps, idx] = sort(p0, 'ascend');
     m = numel(ps);
     if m==0; return; end
@@ -701,7 +672,6 @@ end
 function tbl = makeMeanSDtable(wl, X)
     mu = mean(X, 1, 'omitnan');
     sd = std(X, 0, 1, 'omitnan');
-    % IMPORTANT: old-style VariableNames syntax (avoids your error)
     tbl = table(wl(:), mu(:), sd(:), 'VariableNames', {'Wavelength_nm','Mean','SD'});
 end
 
@@ -716,13 +686,11 @@ function tbl = makeMeanByGroupTable(wl, X, g, gName)
     tbl = addvars(tbl, string(lv(:)), 'Before', 1, 'NewVariableNames', gName);
 end
 
-function tbl = designLevelCounts(Part, Mat, N2)
+function tbl = designLevelCounts(Part, Mat)
     tbl = table();
-    tbl.Factor = {'Part'; 'Maturity'; 'N2'};
+    tbl.Factor = {'Part'; 'Maturity'};
     tbl.Levels = {strjoin(string(categories(Part)), ', '); ...
-                  strjoin(string(categories(Mat)),  ', '); ...
-                  strjoin(string(categories(N2)),   ', ')};
+                  strjoin(string(categories(Mat)),  ', ')};
     tbl.Counts = {strjoin(string(countcats(Part))', ', '); ...
-                  strjoin(string(countcats(Mat))',  ', '); ...
-                  strjoin(string(countcats(N2))',   ', ')};
+                  strjoin(string(countcats(Mat))',  ', ')};
 end
