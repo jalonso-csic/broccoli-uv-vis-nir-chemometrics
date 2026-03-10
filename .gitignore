@@ -20,5 +20,4 @@ outputs/
 **/*.pdf
 **/*.eps
 
-# Optional: data folders (if you create them later)
-data/
+Allow tracked data file
