@@ -2,6 +2,7 @@
 
 Reproducible MATLAB pipelines for UV-VIS-NIR reflectance spectroscopy preprocessing, modelling, interpretability, and decision support in broccoli by-product datasets.
 
+Zenodo DOI: [10.5281/zenodo.17543067](https://doi.org/10.5281/zenodo.17543067)
 ## Overview
 
 This repository contains MATLAB workflows developed for chemometric analysis of broccoli by-product datasets acquired by UV-VIS-NIR reflectance spectroscopy across the 250-1800 nm range. The code is organised by analytical objective and covers univariate factorial inference, spectral structure analysis, nested cross-validation partial least squares regression, VIP stability assessment, and within-domain prioritisation.
@@ -154,7 +155,9 @@ This repository is distributed under the MIT License. See `LICENSE` for details.
 
 ## Citation
 
-If you use this repository, please cite the associated manuscript and the corresponding repository release record, if available.
+If you use this repository, please cite the associated manuscript and the Zenodo record:
+
+Alonso, J. *broccoli-uv-vis-nir-chemometrics: Reproducible MATLAB pipelines for UV-VIS-NIR spectroscopy in broccoli by-products*. Zenodo. https://doi.org/10.5281/zenodo.17543067
 
 ## Contact
 
