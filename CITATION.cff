@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+title: "broccoli-uv-vis-nir-chemometrics"
+message: "If you use this repository, please cite it using the metadata below."
+type: software
+authors:
+  - family-names: "Alonso"
+    given-names: "Jesus"
+repository-code: "https://github.com/jalonso-csic/broccoli-uv-vis-nir-chemometrics"
+license: "MIT"
+version: "v1.0.1"
+doi: "10.5281/zenodo.17543067"
+date-released: 2026-03-10
+url: "https://doi.org/10.5281/zenodo.17543067"
